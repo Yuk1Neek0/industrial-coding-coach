@@ -75,10 +75,14 @@ implementation, and review.
 
 - **No product feature** may be implemented without a PRD/spec and a CCPM
   task / GitHub Issue. (Foundation/setup work is exempt only during Milestone 0.)
-- **One bounded issue at a time.** State the issue, files to change, plan,
-  verification commands, and risks before editing. After editing, summarize
-  changed files, the acceptance-criteria checklist, verification results, and
-  risks. Then stop for human review.
+- **One bounded issue at a time** within a stream. State the issue, files to
+  change, plan, verification commands, and risks before editing. After editing,
+  summarize changed files, the acceptance-criteria checklist, verification
+  results, and risks. Then stop for human review.
+- **Parallel work** follows ADR 0008: epics run in parallel via git worktrees
+  (one `epic/<name>` branch per epic, merged to `main` via PR — from M3 onward);
+  within an epic, independent non-conflicting tasks may run as background
+  sub-agents. Dependency-chained tasks stay sequential.
 - **Tool installation follows official docs / official repo README** — never
   install or upgrade a major tool from memory. Record the source in a setup
   note or ADR. Ask for human approval if a tool changes architecture,
