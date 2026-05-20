@@ -37,10 +37,8 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Test
+        run: pnpm test
+
       - name: Build
         run: pnpm build
-
-      # Test steps are intentionally omitted until test scripts exist.
-      # When they do, add:
-      #   - run: pnpm test
-      #   - run: pnpm test:e2e
