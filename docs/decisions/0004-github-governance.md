@@ -1,6 +1,6 @@
 # ADR 0004 — GitHub Engineering Governance
 
-- **Status:** Accepted — **branch protection not pursued** (see Application Result)
+- **Status:** Accepted — **branch protection and CodeQL both dropped** (see Application Result)
 - **Date:** 2026-05-20
 
 ## Context
@@ -89,14 +89,24 @@ What **was** enabled successfully:
 - Dependabot automated security fixes ✅
 - Secret scanning + push protection ✅
 - Issues: enabled (default).
-- CodeQL workflow committed, but code scanning upload requires a public repo
-  or Advanced Security — see the M0 status doc for the open CI findings.
+
+### CodeQL dropped (2026-05-20)
+
+CodeQL code-scanning upload requires a public repo or GitHub Advanced Security;
+on this private free-plan repo the workflow always failed. **Decision: drop
+CodeQL.** `.github/workflows/codeql.yml` was removed. The CI quality gate is now
+CI (lint/typecheck/build) + Gitleaks secret scanning, which is sufficient for
+this project. If the repo later goes public, CodeQL can be re-added from the
+official starter workflow.
+
+`CodeQL analyze` is consequently **not** a required status check (branch
+protection is not enforced anyway — see above).
 
 ## Consequences
 
-- Governance intent is recorded and reviewable now; enforcement is pending a
-  plan/visibility change.
-- Required-check names must stay in sync with the workflow/job names in
-  `.github/workflows/`.
-- Until branch protection is enforced, `main` is unprotected — rely on workflow
-  discipline (PRs, CI) by convention.
+- `main` is unprotected — the project relies on **workflow discipline by
+  convention** (feature branches, PRs, CI green before merge), per `CLAUDE.md`
+  and ADR 0001.
+- The CI quality gate is CI + Gitleaks only; no static-analysis scanner.
+- Required-check names (if branch protection is ever enforced) must match the
+  job names in `.github/workflows/`.

@@ -16,7 +16,6 @@ Assess (research only) · Hold (do not adopt now).
 | GitHub Issues | Execution source of truth | Keep CCPM ↔ Issues in sync; avoid drift |
 | GitHub Actions | Quality-gate CI runner | Action version drift; covered by Dependabot |
 | Gitleaks | Secret scanning in CI | False positives; tuned via `.gitleaks.toml` |
-| CodeQL | Static security analysis | Build/scan time cost; weekly schedule + PR runs |
 | Dependabot | Dependency + Actions update PRs | PR noise; grouped minor/patch updates |
 | Copier | Intended workflow-filesystem initializer | No template yet — `docs/` is a manual overlay (ADR 0002) |
 | Anthropic SDK | Default for all core LLM calls (M4/M5/M8) — prompt caching, tool use, structured outputs | Model/version drift; pin model IDs, follow official migration notes (ADR 0005) |
@@ -51,6 +50,7 @@ Assess (research only) · Hold (do not adopt now).
 |---|---|
 | Any second delivery workflow alongside CCPM | One delivery spine only — avoid process conflict |
 | Custom CCPM-like scripts | The installed CCPM skill is the source of truth |
+| CodeQL | Code scanning needs a public repo or Advanced Security — unavailable on the private free plan; dropped (ADR 0004). Re-add from the official starter workflow if the repo goes public. |
 
 ## Review log
 
@@ -58,3 +58,4 @@ Assess (research only) · Hold (do not adopt now).
 |---|---|
 | 2026-05-20 | Initial radar created during Milestone 0. |
 | 2026-05-20 | Added Anthropic SDK (Adopt); LangChain.js + LangGraph and LangSmith (Trial) — see ADR 0005. |
+| 2026-05-20 | Dropped CodeQL (Adopt → Hold) — unavailable on the private free plan; see ADR 0004. |

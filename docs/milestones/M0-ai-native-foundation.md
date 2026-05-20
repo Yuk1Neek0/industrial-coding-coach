@@ -42,11 +42,9 @@ workflow, CI/security baseline, governance. **No product features in M0.**
   (HTTP 403 calling `/pulls/{n}/commits` with a read-only token). `security.yml`
   now runs the official gitleaks binary directly — no API calls, works for all
   event types.
-- **CodeQL — known limitation, left as-is.** `codeql.yml` runs but the upload
-  step fails: *"Code scanning is not enabled for this repository"* (needs a
-  public repo or Advanced Security). The workflow is correct and will pass once
-  code scanning is available. Not pursued for the same reason as branch
-  protection.
+- **CodeQL — dropped (2026-05-20).** Code scanning needs a public repo or
+  Advanced Security; on this private free-plan repo `codeql.yml` always failed.
+  The workflow was removed. CI quality gate is now CI + Gitleaks. See ADR 0004.
 
 ## Definition of Done
 
