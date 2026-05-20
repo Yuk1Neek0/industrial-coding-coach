@@ -2,8 +2,8 @@
 name: golden-path-catalog
 status: in-progress
 created: 2026-05-20T19:24:32Z
-updated: 2026-05-20T20:49:44Z
-progress: 67%
+updated: 2026-05-20T20:55:01Z
+progress: 83%
 prd: .claude/prds/golden-path-catalog.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/28
 ---
@@ -85,7 +85,7 @@ Synced to GitHub 2026-05-20 — see `github-mapping.md`.
 - [x] #29 - Set up SQLite + Drizzle ORM (29.md, parallel: false)
 - [x] #30 - Golden Path schema + migration (30.md, parallel: false)
 - [x] #31 - Typed catalog data-access layer + tests (31.md, parallel: true)
-- [ ] #32 - Author 5 Golden Path entries + seed script (32.md, parallel: true)
+- [x] #32 - Author 5 Golden Path entries + seed script (32.md, parallel: true)
 - [x] #33 - Catalog page spec + v0 prompt (33.md, parallel: true)
 - [ ] #34 - Integrate the Catalog UI page (34.md, parallel: false)
 
