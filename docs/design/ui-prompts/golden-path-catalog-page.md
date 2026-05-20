@@ -1,23 +1,32 @@
-# v0 Prompt: Golden Path Catalog page
+# Claude Design Prompt: Golden Path Catalog page
 
-Issue: #33 · Epic: `golden-path-catalog`
+Issue: #33 · Epic: `golden-path-catalog` · Tool: **Claude Design** (ADR 0007)
 
-This is the v0.app prompt for the Catalog UI page. It is derived from the page
-spec `docs/design/golden-path-catalog-page.md` (read that for the full
-contract). Paste the block below into v0.app to generate the UI.
+UI-generation prompt for the Catalog page. Full contract: the page spec
+`docs/design/golden-path-catalog-page.md` — read that for the complete
+behaviour.
 
-The generated output is a **draft**: it feeds integration task **#34**, where
-Claude Code reconciles v0's components with the existing `apps/web` +
-`packages/ui` (shadcn/ui) setup and wires the pages to the real data-access
-layer. Do not expect v0 to produce final wiring — it produces the interface.
+## How to use this (Claude Design)
 
-**Stack the output must target** (state this to v0): Next.js App Router, React
-Server Components, TypeScript, Tailwind CSS, and shadcn/ui components. Light +
-dark mode. Build with mock/sample data only — no data fetching.
+1. In Claude Design, **create a project** and **link this repository** so it
+   uses the real `packages/ui` (shadcn/ui) components and styling patterns.
+2. Optionally attach the page spec `docs/design/golden-path-catalog-page.md`
+   as context.
+3. Paste the prompt below. Iterate on the canvas with chat + inline comments.
+4. When happy, **export via "Handoff to Claude Code"** (or `.zip` / standalone
+   HTML) and return it here.
+
+The output is a **draft**. Integration task **#34** reconciles it with
+`apps/web` + `packages/ui` and wires the pages to the real data-access layer —
+do not expect Claude Design to produce final wiring; it produces the interface.
+
+**Stack to target:** Next.js App Router, React Server Components, TypeScript,
+Tailwind CSS, shadcn/ui. Light + dark mode. Build with mock/sample data only —
+no data fetching.
 
 ---
 
-## Prompt — paste into v0.app
+## Prompt — paste into Claude Design
 
 Build a **Golden Path Catalog** for a learning-coach web app, using Next.js
 (App Router), React, TypeScript, Tailwind CSS, and shadcn/ui. It has two views:
@@ -156,7 +165,8 @@ shadcn/ui: `Card` (`CardHeader`, `CardTitle`, `CardDescription`, `CardContent`),
 `Badge`, `Input`, `Select` (or a segmented control), `Skeleton`, `Button`,
 `Separator`. lucide-react for icons (search, steps/list, check, arrow-left,
 external-link). Keep components small and composable so they integrate cleanly
-into an existing shadcn/ui monorepo.
+into an existing shadcn/ui monorepo — reuse `packages/ui` rather than
+duplicating primitives.
 
 ---
 
@@ -164,14 +174,14 @@ into an existing shadcn/ui monorepo.
 
 - The repo already has shadcn/ui in `packages/ui` (`@workspace/ui`) — **reuse
   it**; do not duplicate primitives. Add any missing shadcn components there.
-- Replace v0's mock data array with calls to the typed data-access layer:
-  `listGoldenPaths()` on `/catalog` and `getGoldenPathBySlug(slug)` on
+- Replace the design's mock data array with calls to the typed data-access
+  layer: `listGoldenPaths()` on `/catalog` and `getGoldenPathBySlug(slug)` on
   `/catalog/[slug]` — server-side (React Server Components), no client fetch.
-- Map v0's loading/empty/error mockups onto real App Router files:
+- Map the design's loading/empty/error mockups onto real App Router files:
   `loading.tsx`, `error.tsx`, and a detail `not-found.tsx`; route `null` from
   `getGoldenPathBySlug` through `notFound()`.
-- Keep the search/project-type filter client-side (it is a small Client
-  Component island over server-loaded data).
+- Keep the search/project-type filter client-side (a small Client Component
+  island over server-loaded data).
 - Verify the result against `docs/design/golden-path-catalog-page.md` §14
   acceptance criteria; record integration notes in
-  `docs/design/v0-integration-notes/`.
+  `docs/design/ui-integration-notes/`.

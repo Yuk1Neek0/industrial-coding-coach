@@ -3,8 +3,9 @@
 Issue: #33 · Epic: `golden-path-catalog` · PRD: `.claude/prds/golden-path-catalog.md` (FR-4)
 
 This spec defines the Catalog UI page for Milestone 2. It is the input to the
-v0 prompt (`docs/design/v0-prompts/golden-path-catalog-page.md`) and to the
-integration task #34. It must be human-reviewed before the v0 prompt is run.
+Claude Design prompt (`docs/design/ui-prompts/golden-path-catalog-page.md`) and
+to the integration task #34. It must be human-reviewed before the prompt is run.
+(UI tool: Claude Design — see ADR 0007.)
 
 ---
 
@@ -271,5 +272,5 @@ No create/edit/delete — the catalog is seeded data in M2 (PRD: no authoring UI
 - [ ] **Success** state renders every populated section with real seed content.
 - [ ] Accessibility notes in §13 are satisfied (headings, landmarks, single
       focusable card link, keyboard operability, labelled inputs, AA contrast).
-- [ ] Page spec is human-reviewed before the v0 prompt is used (Definition of
-      Done, task #33).
+- [ ] Page spec is human-reviewed before the Claude Design prompt is used
+      (Definition of Done, task #33).

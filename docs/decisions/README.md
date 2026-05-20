@@ -14,3 +14,4 @@ ADRs record decisions that affect architecture, tooling, or workflow.
 | 0004 | GitHub engineering governance | Accepted (branch protection & CodeQL dropped) |
 | 0005 | LLM integration & LangChain scope | Accepted |
 | 0006 | Golden Path Catalog storage (SQLite) | Accepted |
+| 0007 | UI generation tool: Claude Design | Accepted |

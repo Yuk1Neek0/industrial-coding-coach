@@ -19,12 +19,12 @@ Assess (research only) · Hold (do not adopt now).
 | Dependabot | Dependency + Actions update PRs | PR noise; grouped minor/patch updates |
 | Copier | Intended workflow-filesystem initializer | No template yet — `docs/` is a manual overlay (ADR 0002) |
 | Anthropic SDK | Default for all core LLM calls (M4/M5/M8) — prompt caching, tool use, structured outputs | Model/version drift; pin model IDs, follow official migration notes (ADR 0005) |
+| Claude Design | UI-generation tool — links the repo, designs on a canvas, exports to Claude Code | Research preview, may change; UI still requires a Page Spec first (ADR 0007) |
 
 ## Trial — evaluate before adopting
 
 | Tool | Candidate use | Note |
 |---|---|---|
-| v0 | UI/interface drafts after page specs | Only after a Page Spec; never for logic/architecture |
 | BMAD | Agent-driven planning method | Compare against CCPM; do not run two delivery workflows |
 | GitHub Spec Kit | Spec-driven development scaffolding | May overlap with CCPM Plan phase |
 | OpenHands | Autonomous coding agent | Sandbox/permission review required before use |
@@ -51,6 +51,7 @@ Assess (research only) · Hold (do not adopt now).
 | Any second delivery workflow alongside CCPM | One delivery spine only — avoid process conflict |
 | Custom CCPM-like scripts | The installed CCPM skill is the source of truth |
 | CodeQL | Code scanning needs a public repo or Advanced Security — unavailable on the private free plan; dropped (ADR 0004). Re-add from the official starter workflow if the repo goes public. |
+| v0 | Replaced by Claude Design as the UI-generation tool (ADR 0007). |
 
 ## Review log
 
@@ -59,3 +60,4 @@ Assess (research only) · Hold (do not adopt now).
 | 2026-05-20 | Initial radar created during Milestone 0. |
 | 2026-05-20 | Added Anthropic SDK (Adopt); LangChain.js + LangGraph and LangSmith (Trial) — see ADR 0005. |
 | 2026-05-20 | Dropped CodeQL (Adopt → Hold) — unavailable on the private free plan; see ADR 0004. |
+| 2026-05-20 | Adopted Claude Design as the UI-generation tool; v0 retired (Trial → Hold) — see ADR 0007. |

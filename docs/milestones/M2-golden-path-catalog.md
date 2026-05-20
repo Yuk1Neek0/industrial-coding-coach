@@ -33,16 +33,19 @@ for understanding AI-assisted projects. First milestone of real product work.
 | #33 | Catalog page spec + v0 prompt | ✅ Done — v0 prompt handed off |
 | #34 | Integrate the Catalog UI page | ⏸ Blocked — needs the v0 output |
 
-UI approach: **v0 round-trip** — #33 produced the page spec + v0 prompt; the
-maintainer generates the design in v0.app; #34 integrates that output.
+UI approach: **Claude Design** (ADR 0007 — replaces v0) — #33 produced the page
+spec + Claude Design prompt; the maintainer generates the design in Claude
+Design; #34 integrates that output.
 
-## v0 hand-off — action needed from the maintainer
+## Claude Design hand-off — action needed from the maintainer
 
-#34 cannot proceed until the Catalog UI design is generated in v0:
+#34 cannot proceed until the Catalog UI design is generated:
 
-1. Open the v0 prompt: `docs/design/v0-prompts/golden-path-catalog-page.md`.
-2. Paste it into v0.app and generate the design.
-3. Return the result (the `shadcn` add command / URL v0 provides, or the code).
+1. Open the prompt: `docs/design/ui-prompts/golden-path-catalog-page.md`.
+2. In Claude Design, create a project, **link this repository**, and paste the
+   prompt. Iterate on the canvas.
+3. Export via **"Handoff to Claude Code"** (or `.zip` / standalone HTML) and
+   return the result here.
 
 Then #34 wires it into `apps/web` against the typed data-access layer and M2 is
 complete. Spec to verify against: `docs/design/golden-path-catalog-page.md`.
