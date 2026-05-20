@@ -1,6 +1,6 @@
 # M1 — Product Reframing & Core Problem Definition
 
-**State:** Stage 1 done — Product PRD pending human review · **Date:** 2026-05-20
+**State:** Definition complete — epic #21 synced; 6 task issues open for execution · **Date:** 2026-05-20
 
 Goal: reframe the product from "generic project generation" to a coach that
 helps job-seeking junior devs understand, review, debug, and explain their
@@ -21,22 +21,27 @@ AI-assisted projects. M1 is a CCPM **Plan** milestone — definition, not code.
 
 | Stage | Description | Status |
 |---|---|---|
-| 1 | CCPM Plan — Product PRD (`.claude/prds/product.md`) + overview snapshot | Done — pending human review |
-| — | **Human review of the Product PRD** | **Gate — pending** |
-| 2 | CCPM Epic → Structure → Sync (epic + tasks → GitHub issues) | Pending PRD approval |
+| 1 | CCPM Plan — Product PRD (`.claude/prds/product.md`) + overview snapshot | Done |
+| — | Human review of the Product PRD | Approved (with refinements: open-source, local-first, web-only, GitHub-connect) |
+| 2 | CCPM Epic → Structure → Sync | Done — epic #21, tasks #22–#27 |
 
-## Gate — needs human review
+## Execution backlog (6 open task issues)
 
-Per M1's acceptance criteria, the Product PRD must be human-approved before
-Milestone 2. Review surface:
+The M1 definition is set. These task issues operationalize it and hand off to M2:
 
-- `.claude/prds/product.md` — the Product PRD
-- `docs/current/product-overview.md` — one-page snapshot
+| Issue | Task |
+|---|---|
+| #22 | Target-user persona & jobs-to-be-done |
+| #23 | Competitive positioning teardown |
+| #24 | Success-metrics tree |
+| #25 | Reframe README + CLAUDE.md to the product |
+| #26 | Open-source readiness — CONTRIBUTING + make repo public *(public = gated)* |
+| #27 | Milestone 2 entry-point spec stub |
 
 ## Acceptance Criteria
 
 - [x] Product reframed as an understand/review/debug/explain coach (not generic
       project generation)
-- [x] Product PRD created via CCPM Plan
-- [ ] Human review approves the PRD
-- [ ] PRD converted to epic + tasks + GitHub issues (Stage 2)
+- [x] Product PRD created via CCPM Plan and human-approved
+- [x] PRD converted to epic + tasks + GitHub issues
+- [ ] The 6 task issues executed (definition specs + open-source readiness)
