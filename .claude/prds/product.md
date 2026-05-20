@@ -21,6 +21,11 @@ ship it as a portfolio piece they truly own. Every explanation is paired with a
 comprehension check, and the output includes job-market artifacts: interview
 Q&A, résumé bullets, and architecture explanations.
 
+The product is **open-source** and **local-first**: the user runs it on their
+own machine and does everything through a browser-based web UI — no external
+IDE, editor, or extension required, and their code is analyzed locally. The user
+may optionally connect their GitHub account (read-only) to pull in a repo.
+
 This PRD reframes the product (Milestone 1). It defines *what the product is and
 for whom*; the capabilities below are realized by later milestones (M2–M10).
 
@@ -95,9 +100,10 @@ fully understand, so that it strengthens my job search instead of exposing me.
 These are **product-level capabilities**, realized across milestones M2–M10.
 M1 implements none of them — it defines them.
 
-- **FR-1 Repo ingestion & analysis.** Accept an existing project (local folder
-  or GitHub repo); parse file tree, package/manifest files, README, and key
-  source files.
+- **FR-1 Repo ingestion & analysis.** Accept an existing project — a local
+  folder, or a repo from the user's optionally-connected GitHub account
+  (read-only access via OAuth or token; delivered in M11). Parse file tree,
+  package/manifest files, README, and key source files.
 - **FR-2 Stack & architecture explanation.** Explain each major technology and
   structural decision in terms of the user's actual repo: what it does, why it
   is used, alternatives and trade-offs, which files to inspect.
@@ -128,6 +134,13 @@ M1 implements none of them — it defines them.
   not; it converts AI-generated code into user understanding.
 - **LLM architecture per ADR 0005.** Core LLM features use the Anthropic SDK
   directly; LangChain is confined to the M6 repo-analysis pipeline.
+- **Open-source.** The project is released as open-source (MIT). Its own
+  development — built with the M0 CCPM/CI workflow — is a working reference
+  example of the industrial workflow it teaches.
+- **Local-first.** The product runs on the user's own machine. The user's code
+  is analyzed locally and is not uploaded to a third-party server.
+- **Web UI, no IDE.** All user interaction happens in a browser-based web app
+  (`apps/web`). No external IDE, editor, or extension is required.
 
 ## Success Criteria
 
@@ -157,8 +170,15 @@ PRD is human-approved before Milestone 2 begins.
 - **Constraint:** LLM usage follows ADR 0005.
 - **Constraint:** all product work follows the M0 workflow (PRD → epic → issue →
   PR → CI → review); no feature without a spec and an issue.
+- **Constraint:** the project is open-source (MIT-licensed) and local-first — a
+  web app the user runs on their own machine, not a hosted SaaS in the
+  milestones covered here.
+- **Constraint:** all user interaction is via the web UI in `apps/web`; no IDE
+  plugin or desktop-editor dependency.
 - **Assumption:** users arrive with an existing AI-assisted project; the product
   is not responsible for creating one.
+- **Assumption:** connecting a GitHub account is optional — the product works on
+  a local folder without it; GitHub connection (read-only) is delivered in M11.
 - **Assumption:** the primary user is a job-seeking junior dev — early-career,
   English-reading, comfortable running an AI tool but not yet able to explain
   the code it produced.
@@ -178,6 +198,8 @@ This PRD explicitly reframes the product. The following are **non-goals**:
   here the industrial workflow is shown to *teach*, not to *run a team*.
 - **Not an IDE or an autonomous coding agent.** The product explains and checks
   understanding; it does not take over writing the user's code.
+- **Not a hosted SaaS or an IDE plugin** in the milestones covered here — it is
+  an open-source, local-first web app.
 - **Out of scope for M1 specifically:** any implementation, UI, database, auth,
   or LLM integration. M1 produces definition only.
 
@@ -191,4 +213,6 @@ This PRD explicitly reframes the product. The following are **non-goals**:
   Path Catalog), M3 (Template Registry), M4 (Recommendation Engine), M5 (Stack
   Decision Explainer), M6 (Project Logic Mapper), M7–M9 (issue learning, diff
   review, challenges), M10 (learning memory & portfolio export).
+- **M11 (GitHub Integration)** — delivers the optional read-only GitHub-account
+  connection referenced in FR-1.
 - **Human review** — approval of this PRD is required before Milestone 2.

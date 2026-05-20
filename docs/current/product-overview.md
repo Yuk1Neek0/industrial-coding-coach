@@ -12,6 +12,13 @@ real professional development workflow.
 
 It does **not** generate projects. It coaches existing repos.
 
+## How it runs
+
+Open-source (MIT), local-first, and fully web-based: the user runs it on their
+own machine and works entirely in the browser — no external IDE or extension.
+Their code is analyzed locally. A GitHub account can optionally be connected
+(read-only) to import a repo.
+
 ## Who it's for
 
 **Job-seeking junior developers** — bootcamp grads and self-taught devs who
