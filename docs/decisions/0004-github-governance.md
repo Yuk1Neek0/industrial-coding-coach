@@ -1,6 +1,6 @@
 # ADR 0004 — GitHub Engineering Governance
 
-- **Status:** Accepted (intended ruleset) — **application gated**
+- **Status:** Accepted — **branch protection blocked by plan tier** (see Application Result)
 - **Date:** 2026-05-20
 
 ## Context
@@ -60,10 +60,41 @@ JSON
 
 (Or use a Repository Ruleset in the GitHub UI: Settings → Rules.)
 
+## Application Result (2026-05-20)
+
+Branch protection was approved and **attempted**, but could not be applied:
+
+- **Classic branch protection** (`PUT /branches/main/protection`) → HTTP 403:
+  *"Upgrade to GitHub Pro or make this repository public to enable this
+  feature."*
+- **Repository ruleset** (`POST /rulesets`) → HTTP 403, same reason.
+
+This repository is **private on the free plan**, where neither classic branch
+protection nor rulesets are available. The intended ruleset above is therefore
+documented but **not enforced**. The plan permits governance to be *configured
+or documented* — it is documented here.
+
+**To enable it**, choose one:
+1. Make the repository public, or
+2. Upgrade the account to GitHub Pro,
+
+then apply the ruleset (`gh api -X POST repos/<repo>/rulesets ...`). For a solo
+maintainer, use `required_approving_review_count: 0` so PRs + CI are required
+without a self-blocking approval gate.
+
+What **was** enabled successfully:
+- Dependabot alerts ✅
+- Dependabot automated security fixes ✅
+- Secret scanning + push protection ✅
+- Issues: enabled (default).
+- CodeQL workflow committed, but code scanning upload requires a public repo
+  or Advanced Security — see the M0 status doc for the open CI findings.
+
 ## Consequences
 
-- Governance intent is recorded and reviewable now.
-- The actual settings change is a deliberate, human-approved follow-up — it is
-  one of the explicit gates at the end of Milestone 0.
+- Governance intent is recorded and reviewable now; enforcement is pending a
+  plan/visibility change.
 - Required-check names must stay in sync with the workflow/job names in
   `.github/workflows/`.
+- Until branch protection is enforced, `main` is unprotected — rely on workflow
+  discipline (PRs, CI) by convention.
