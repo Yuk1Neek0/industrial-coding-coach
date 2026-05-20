@@ -4,11 +4,16 @@ Guidance for Claude Code (and any AI agent) working in this repository.
 
 ## Project
 
-**Industrial Coding Coach** — an Agentic Learning Coach that helps users understand,
-review, debug, and explain AI-assisted / "vibe-coded" projects.
+**Industrial Coding Coach** — an open-source, local-first, web-based learning
+coach. It takes a project a **job-seeking junior dev** built with heavy AI
+assistance and coaches them to genuinely understand it — the stack, the
+architecture, and how it maps onto a real professional development workflow — so
+they can explain and defend it in interviews. It coaches *existing* repos; it
+does not generate projects.
 
-This is an AI-native development project: the workflow, quality gates, and tooling
-are themselves part of what the project demonstrates.
+Authoritative product definition: `.claude/prds/product.md` (see also
+`docs/current/product-overview.md`). This is an AI-native project: the workflow,
+quality gates, and tooling are themselves part of what it demonstrates.
 
 ## Repository Shape
 

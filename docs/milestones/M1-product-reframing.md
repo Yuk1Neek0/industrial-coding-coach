@@ -1,6 +1,6 @@
 # M1 — Product Reframing & Core Problem Definition
 
-**State:** Definition complete — epic #21 synced; 6 task issues open for execution · **Date:** 2026-05-20
+**State:** 5/6 task issues done — only #26 "make repo public" remains (gated) · **Date:** 2026-05-20
 
 Goal: reframe the product from "generic project generation" to a coach that
 helps job-seeking junior devs understand, review, debug, and explain their
@@ -25,18 +25,16 @@ AI-assisted projects. M1 is a CCPM **Plan** milestone — definition, not code.
 | — | Human review of the Product PRD | Approved (with refinements: open-source, local-first, web-only, GitHub-connect) |
 | 2 | CCPM Epic → Structure → Sync | Done — epic #21, tasks #22–#27 |
 
-## Execution backlog (6 open task issues)
+## Execution backlog
 
-The M1 definition is set. These task issues operationalize it and hand off to M2:
-
-| Issue | Task |
-|---|---|
-| #22 | Target-user persona & jobs-to-be-done |
-| #23 | Competitive positioning teardown |
-| #24 | Success-metrics tree |
-| #25 | Reframe README + CLAUDE.md to the product |
-| #26 | Open-source readiness — CONTRIBUTING + make repo public *(public = gated)* |
-| #27 | Milestone 2 entry-point spec stub |
+| Issue | Task | Status | Artifact |
+|---|---|---|---|
+| #22 | Target-user persona & jobs-to-be-done | ✅ Done | `docs/specs/target-user-persona.md` |
+| #23 | Competitive positioning teardown | ✅ Done | `docs/specs/competitive-positioning.md` |
+| #24 | Success-metrics tree | ✅ Done | `docs/specs/success-metrics.md` |
+| #25 | Reframe README + CLAUDE.md | ✅ Done | `README.md`, `CLAUDE.md` |
+| #26 | Open-source readiness | ◑ Partial | `LICENSE`, `CONTRIBUTING.md` done; **make repo public — gated** |
+| #27 | Milestone 2 entry-point spec stub | ✅ Done | `docs/specs/m2-golden-path-catalog-entry.md` |
 
 ## Acceptance Criteria
 
@@ -44,4 +42,5 @@ The M1 definition is set. These task issues operationalize it and hand off to M2
       project generation)
 - [x] Product PRD created via CCPM Plan and human-approved
 - [x] PRD converted to epic + tasks + GitHub issues
-- [ ] The 6 task issues executed (definition specs + open-source readiness)
+- [x] Definition task issues executed (#22–#25, #27)
+- [ ] #26 — make the repository public (gated on human go-ahead)
