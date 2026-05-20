@@ -8,9 +8,9 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { createCatalogDb, resolveDbFile } from "./client.js"
-import { goldenPaths } from "./schema.js"
-import { goldenPathSeed } from "./seed-data.js"
+import { createCatalogDb, resolveDbFile } from "./client"
+import { goldenPaths } from "./schema"
+import { goldenPathSeed } from "./seed-data"
 
 const migrationsFolder = path.join(
   path.dirname(fileURLToPath(import.meta.url)),

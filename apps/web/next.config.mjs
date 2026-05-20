@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@workspace/ui"],
+  transpilePackages: ["@workspace/ui", "@workspace/db"],
+  // better-sqlite3 is a native module — keep it out of the bundler.
+  serverExternalPackages: ["better-sqlite3"],
 }
 
 export default nextConfig

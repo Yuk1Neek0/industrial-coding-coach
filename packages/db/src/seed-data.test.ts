@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { goldenPathSeed } from "./seed-data.js"
+import { goldenPathSeed } from "./seed-data"
 
 describe("Golden Path seed data", () => {
   it("contains exactly 5 Golden Paths", () => {

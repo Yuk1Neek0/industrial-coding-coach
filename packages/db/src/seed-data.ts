@@ -6,7 +6,7 @@
 // alternatives, sources, risks). `templatesReferenced` uses stable slugs that
 // the Template Registry (M3) will define.
 
-import type { NewGoldenPath } from "./schema.js"
+import type { NewGoldenPath } from "./schema"
 
 export const goldenPathSeed: NewGoldenPath[] = [
   {

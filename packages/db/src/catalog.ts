@@ -6,8 +6,8 @@
 
 import { eq } from "drizzle-orm"
 
-import { createCatalogDb, type CatalogDb } from "./client.js"
-import { type GoldenPath, goldenPaths } from "./schema.js"
+import { createCatalogDb, type CatalogDb } from "./client"
+import { type GoldenPath, goldenPaths } from "./schema"
 
 let defaultDb: CatalogDb | undefined
 

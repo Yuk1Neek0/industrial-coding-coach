@@ -1,7 +1,11 @@
 {
   "extends": "@workspace/typescript-config/base.json",
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    // Bundler resolution: this package is consumed by bundlers (Next/Turbopack),
+    // tsx, and Vitest — extensionless relative imports resolve everywhere.
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
   },
   "include": ["src", "drizzle.config.ts"],
   "exclude": ["node_modules", "dist", "drizzle"]

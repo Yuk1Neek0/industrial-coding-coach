@@ -3,7 +3,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-import * as schema from "./schema.js"
+import * as schema from "./schema"
 
 /** Package root: packages/db (one level up from src/). */
 const packageRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..")

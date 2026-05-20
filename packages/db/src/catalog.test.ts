@@ -5,10 +5,10 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { beforeAll, describe, expect, it } from "vitest"
 
-import { getGoldenPathBySlug, listGoldenPaths } from "./catalog.js"
-import type { CatalogDb } from "./client.js"
-import { goldenPaths, type NewGoldenPath } from "./schema.js"
-import * as schema from "./schema.js"
+import { getGoldenPathBySlug, listGoldenPaths } from "./catalog"
+import type { CatalogDb } from "./client"
+import { goldenPaths, type NewGoldenPath } from "./schema"
+import * as schema from "./schema"
 
 const migrationsFolder = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
