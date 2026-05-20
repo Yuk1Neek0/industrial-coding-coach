@@ -11,4 +11,5 @@ ADRs record decisions that affect architecture, tooling, or workflow.
 | 0001 | Development workflow | Accepted |
 | 0002 | Workflow filesystem | Accepted |
 | 0003 | CCPM installation | Accepted |
-| 0004 | GitHub engineering governance | Accepted (application gated) |
+| 0004 | GitHub engineering governance | Accepted (not enforced — free plan) |
+| 0005 | LLM integration & LangChain scope | Accepted |

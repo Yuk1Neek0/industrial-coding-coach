@@ -19,6 +19,7 @@ Assess (research only) · Hold (do not adopt now).
 | CodeQL | Static security analysis | Build/scan time cost; weekly schedule + PR runs |
 | Dependabot | Dependency + Actions update PRs | PR noise; grouped minor/patch updates |
 | Copier | Intended workflow-filesystem initializer | No template yet — `docs/` is a manual overlay (ADR 0002) |
+| Anthropic SDK | Default for all core LLM calls (M4/M5/M8) — prompt caching, tool use, structured outputs | Model/version drift; pin model IDs, follow official migration notes (ADR 0005) |
 
 ## Trial — evaluate before adopting
 
@@ -28,7 +29,9 @@ Assess (research only) · Hold (do not adopt now).
 | BMAD | Agent-driven planning method | Compare against CCPM; do not run two delivery workflows |
 | GitHub Spec Kit | Spec-driven development scaffolding | May overlap with CCPM Plan phase |
 | OpenHands | Autonomous coding agent | Sandbox/permission review required before use |
-| Langfuse | LLM observability + evals | Relevant once the product makes LLM calls (M13) |
+| Langfuse | LLM observability + evals | Relevant once the product makes LLM calls; evaluate at M13 |
+| LangChain.js + LangGraph | Repo-ingestion RAG + multi-step agent — **scoped to M6 (Project Logic Mapper) only** | Heavy abstraction; do not let it spread to M4/M5/M8 or the whole app (ADR 0005) |
+| LangSmith | LLM tracing/observability — native LangChain integration | Evaluate against Langfuse at M13; avoid vendor lock-in |
 | Storybook | Component workshop / visual review | Adopt with the first real UI milestone |
 | Playwright | E2E testing | Adopt when `test:e2e` is introduced; CI is pre-wired |
 
@@ -54,3 +57,4 @@ Assess (research only) · Hold (do not adopt now).
 | Date | Change |
 |---|---|
 | 2026-05-20 | Initial radar created during Milestone 0. |
+| 2026-05-20 | Added Anthropic SDK (Adopt); LangChain.js + LangGraph and LangSmith (Trial) — see ADR 0005. |
