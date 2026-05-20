@@ -11,3 +11,4 @@ those plans.
 | Milestone | Status doc | State |
 |---|---|---|
 | M0 — AI-Native Foundation | [`M0-ai-native-foundation.md`](M0-ai-native-foundation.md) | ✅ Complete |
+| M1 — Product Reframing | [`M1-product-reframing.md`](M1-product-reframing.md) | Stage 1 done — PRD in review |
