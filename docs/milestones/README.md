@@ -10,4 +10,4 @@ those plans.
 
 | Milestone | Status doc | State |
 |---|---|---|
-| M0 — AI-Native Foundation | [`M0-ai-native-foundation.md`](M0-ai-native-foundation.md) | In progress |
+| M0 — AI-Native Foundation | [`M0-ai-native-foundation.md`](M0-ai-native-foundation.md) | ✅ Complete |

@@ -1,6 +1,6 @@
 # M0 — AI-Native Development Pipeline Foundation
 
-**State:** Foundation built, synced & pushed — pending human review · **Date:** 2026-05-20
+**State:** ✅ Complete — human review approved 2026-05-20 · **Date:** 2026-05-20
 
 Goal: establish the clean, traceable, AI-native development foundation —
 scaffold, Claude Code setup, CCPM workflow, workflow filesystem, GitHub issue
@@ -26,7 +26,8 @@ workflow, CI/security baseline, governance. **No product features in M0.**
 
 1. **Foundation PRD approved** — `status: active`.
 2. **CCPM Sync done** — epic #5, tasks #6–#14 created and sub-issue-linked;
-   `github-mapping.md` written. Issues are **open** pending human review.
+   `github-mapping.md` written. All 10 issues **closed** after human review;
+   the completed epic is archived at `.claude/epics/archived/foundation/`.
 3. **Branch protection — not pursued.** Private free-plan repo blocks both
    classic protection and rulesets (HTTP 403). Maintainer chose not to make the
    repo public or upgrade to Pro. `main` relies on workflow discipline by
@@ -60,4 +61,4 @@ workflow, CI/security baseline, governance. **No product features in M0.**
 - [x] Tool radar exists
 - [x] No secrets committed
 - [x] No product features implemented
-- [ ] Human review complete *(this is the gate — see above)*
+- [x] Human review complete — approved 2026-05-20
