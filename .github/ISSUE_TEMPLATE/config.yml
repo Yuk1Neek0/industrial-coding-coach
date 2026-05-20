@@ -1,0 +1,7 @@
+blank_issues_enabled: true
+contact_links:
+  - name: CCPM-managed work
+    url: https://github.com/automazeio/ccpm
+    about: >-
+      Epics and tasks are normally created from a CCPM PRD and synced to GitHub.
+      Use these templates only for standalone tasks or bug reports.

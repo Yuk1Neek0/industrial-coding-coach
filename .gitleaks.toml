@@ -1,0 +1,15 @@
+# Gitleaks configuration for industrial-coding-coach
+# Docs: https://github.com/gitleaks/gitleaks
+
+title = "industrial-coding-coach gitleaks config"
+
+# Start from gitleaks' built-in rule set, then customize below.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Repository-wide allowlist"
+paths = [
+  '''pnpm-lock\.yaml''',
+  '''\.env\.example''',
+]
