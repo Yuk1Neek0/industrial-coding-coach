@@ -1,6 +1,6 @@
 # ADR 0004 — GitHub Engineering Governance
 
-- **Status:** Accepted — **branch protection blocked by plan tier** (see Application Result)
+- **Status:** Accepted — **branch protection not pursued** (see Application Result)
 - **Date:** 2026-05-20
 
 ## Context
@@ -70,17 +70,19 @@ Branch protection was approved and **attempted**, but could not be applied:
 - **Repository ruleset** (`POST /rulesets`) → HTTP 403, same reason.
 
 This repository is **private on the free plan**, where neither classic branch
-protection nor rulesets are available. The intended ruleset above is therefore
-documented but **not enforced**. The plan permits governance to be *configured
-or documented* — it is documented here.
+protection nor rulesets are available. The plan permits governance to be
+*configured or documented* — it is documented here.
 
-**To enable it**, choose one:
-1. Make the repository public, or
-2. Upgrade the account to GitHub Pro,
+**Decision (2026-05-20):** branch protection will **not be pursued** for now —
+the maintainer chose not to make the repo public or upgrade to GitHub Pro. The
+intended ruleset above is kept as a record. `main` is therefore unprotected;
+the project relies on **workflow discipline by convention** (feature branches,
+PRs, CI green before merge) as defined in `CLAUDE.md` and ADR 0001.
 
-then apply the ruleset (`gh api -X POST repos/<repo>/rulesets ...`). For a solo
-maintainer, use `required_approving_review_count: 0` so PRs + CI are required
-without a self-blocking approval gate.
+**If revisited later:** make the repo public or upgrade to Pro, then apply the
+ruleset (`gh api -X POST repos/<repo>/rulesets ...`). For a solo maintainer,
+use `required_approving_review_count: 0` so PRs + CI are required without a
+self-blocking approval gate.
 
 What **was** enabled successfully:
 - Dependabot alerts ✅

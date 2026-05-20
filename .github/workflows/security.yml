@@ -18,10 +18,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Run the official gitleaks binary directly instead of
+      # gitleaks/gitleaks-action: the action calls the GitHub API for PR
+      # commits and crashes with HTTP 403 on Dependabot PRs (read-only token).
+      # The binary scans the local git history and needs no API access.
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # GITLEAKS_LICENSE is only required for GitHub organizations,
-          # not for personal accounts. Add it as a secret if this repo
-          # is moved under an org.
+          GITLEAKS_VERSION: "8.24.3"
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          ./gitleaks git . \
+            --config .gitleaks.toml \
+            --redact \
+            --no-banner \
+            --verbose \
+            --exit-code 1
