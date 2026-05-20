@@ -2,10 +2,10 @@
 name: foundation
 status: in-progress
 created: 2026-05-20T17:45:53Z
-updated: 2026-05-20T17:45:53Z
+updated: 2026-05-20T18:03:02Z
 progress: 0%
 prd: .claude/prds/foundation.md
-github: (will be set on sync)
+github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/5
 ---
 
 # Epic: foundation
@@ -89,15 +89,17 @@ recorded for traceability and are already complete; 006–009 are the open work.
 
 ## Tasks Created
 
-- [x] 001.md - shadcn/ui monorepo scaffold (parallel: false)
-- [x] 002.md - Claude Code project setup (parallel: false)
-- [x] 003.md - CCPM install (parallel: false)
-- [x] 004.md - CLAUDE.md workflow memory (parallel: false)
-- [x] 005.md - Workflow filesystem docs/ + .github/ (parallel: false)
-- [ ] 006.md - CI + security baseline (parallel: true)
-- [ ] 007.md - GitHub engineering governance (parallel: true)
-- [ ] 008.md - Tool radar (parallel: true)
-- [ ] 009.md - Verify and commit foundation (parallel: false)
+Synced to GitHub 2026-05-20 — see `github-mapping.md`.
+
+- [ ] #6 - shadcn/ui monorepo scaffold (6.md, parallel: false)
+- [ ] #7 - Claude Code project setup (7.md, parallel: false)
+- [ ] #8 - CCPM install (8.md, parallel: false)
+- [ ] #9 - CLAUDE.md workflow memory (9.md, parallel: false)
+- [ ] #10 - Workflow filesystem docs/ + .github/ (10.md, parallel: false)
+- [ ] #11 - CI + security baseline (11.md, parallel: true)
+- [ ] #12 - GitHub engineering governance (12.md, parallel: true)
+- [ ] #13 - Tool radar (13.md, parallel: true)
+- [ ] #14 - Verify and commit foundation (14.md, parallel: false)
 
 Total tasks: 9
 Parallel tasks: 3 (006, 007, 008)

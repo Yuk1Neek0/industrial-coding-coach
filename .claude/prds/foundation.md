@@ -1,7 +1,7 @@
 ---
 name: foundation
 description: AI-native development pipeline foundation — scaffold, CCPM, workflow filesystem, CI/security, governance
-status: backlog
+status: active
 created: 2026-05-20T17:45:53Z
 ---
 
