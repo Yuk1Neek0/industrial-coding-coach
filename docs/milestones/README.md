@@ -12,3 +12,4 @@ those plans.
 |---|---|---|
 | M0 — AI-Native Foundation | [`M0-ai-native-foundation.md`](M0-ai-native-foundation.md) | ✅ Complete |
 | M1 — Product Reframing | [`M1-product-reframing.md`](M1-product-reframing.md) | ✅ Complete |
+| M2 — Golden Path Catalog | [`M2-golden-path-catalog.md`](M2-golden-path-catalog.md) | Stage 1 done — PRD in review |
