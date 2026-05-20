@@ -13,4 +13,4 @@ ADRs record decisions that affect architecture, tooling, or workflow.
 | 0003 | CCPM installation | Accepted |
 | 0004 | GitHub engineering governance | Accepted (branch protection & CodeQL dropped) |
 | 0005 | LLM integration & LangChain scope | Accepted |
-| 0006 | Golden Path Catalog storage (SQLite) | Proposed |
+| 0006 | Golden Path Catalog storage (SQLite) | Accepted |

@@ -1,6 +1,6 @@
 # ADR 0006 — Golden Path Catalog Storage
 
-- **Status:** Proposed — pending review with the M2 PRD
+- **Status:** Accepted
 - **Date:** 2026-05-20
 
 ## Context

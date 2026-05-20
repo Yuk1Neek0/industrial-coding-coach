@@ -1,7 +1,7 @@
 ---
 name: golden-path-catalog
 description: Curated catalog of Golden Paths — recommended routes for understanding a kind of AI-assisted project
-status: backlog
+status: active
 created: 2026-05-20T19:17:40Z
 ---
 

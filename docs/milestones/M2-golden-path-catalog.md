@@ -1,6 +1,6 @@
 # M2 — Golden Path Catalog MVP
 
-**State:** Stage 1 done — PRD + ADR 0006 pending human review · **Date:** 2026-05-20
+**State:** Stage 2 done — epic #28 synced; 6 task issues ready to execute · **Date:** 2026-05-20
 
 Goal: build the Golden Path Catalog MVP — the curated knowledge base of routes
 for understanding AI-assisted projects. First milestone of real product work.
@@ -18,17 +18,23 @@ for understanding AI-assisted projects. First milestone of real product work.
 
 | Stage | Description | Status |
 |---|---|---|
-| 1 | CCPM Plan — PRD (`.claude/prds/golden-path-catalog.md`) + ADR 0006 | Done — pending human review |
-| — | **Human review of the PRD + ADR 0006** | **Gate — pending** |
-| 2 | CCPM Epic → Structure → Sync (epic + tasks → GitHub issues) | Pending approval |
+| 1 | CCPM Plan — PRD + ADR 0006 | Done — approved |
+| — | Human review of the PRD + ADR 0006 | Approved 2026-05-20 |
+| 2 | CCPM Epic → Structure → Sync | Done — epic #28, tasks #29–#34 |
 
-## Gate — needs human review
+## Execution backlog
 
-Per the milestone plan's M2 flow (Plan → schema decision → ADR → Epic), the PRD
-and the storage ADR are reviewed before the epic is built. Review surface:
+| Issue | Task | Depends on |
+|---|---|---|
+| #29 | Set up SQLite + Drizzle ORM | — |
+| #30 | Golden Path schema + migration | #29 |
+| #31 | Typed catalog data-access layer + tests | #30 |
+| #32 | Author 5 Golden Path entries + seed script | #30 |
+| #33 | Catalog page spec + v0 prompt | — *(ends in v0 hand-off)* |
+| #34 | Integrate the Catalog UI page | #31, #33 |
 
-- `.claude/prds/golden-path-catalog.md` — the M2 PRD
-- `docs/decisions/0006-catalog-storage.md` — SQLite storage + schema decision
+UI approach (decided 2026-05-20): **v0 round-trip** — #33 produces a page spec +
+v0 prompt and hands off to the user; #34 integrates the v0 output.
 
 ## Acceptance Criteria (milestone plan)
 
