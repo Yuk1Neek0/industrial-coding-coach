@@ -1,6 +1,6 @@
 # M1 — Product Reframing & Core Problem Definition
 
-**State:** 5/6 task issues done — only #26 "make repo public" remains (gated) · **Date:** 2026-05-20
+**State:** ✅ Complete — epic #21 done & archived; repo is public · **Date:** 2026-05-20
 
 Goal: reframe the product from "generic project generation" to a coach that
 helps job-seeking junior devs understand, review, debug, and explain their
@@ -33,8 +33,11 @@ AI-assisted projects. M1 is a CCPM **Plan** milestone — definition, not code.
 | #23 | Competitive positioning teardown | ✅ Done | `docs/specs/competitive-positioning.md` |
 | #24 | Success-metrics tree | ✅ Done | `docs/specs/success-metrics.md` |
 | #25 | Reframe README + CLAUDE.md | ✅ Done | `README.md`, `CLAUDE.md` |
-| #26 | Open-source readiness | ◑ Partial | `LICENSE`, `CONTRIBUTING.md` done; **make repo public — gated** |
+| #26 | Open-source readiness | ✅ Done | `LICENSE`, `CONTRIBUTING.md`; repo made public |
 | #27 | Milestone 2 entry-point spec stub | ✅ Done | `docs/specs/m2-golden-path-catalog-entry.md` |
+
+All 6 task issues are closed; epic #21 is complete and archived to
+`.claude/epics/archived/product/`.
 
 ## Acceptance Criteria
 
@@ -42,5 +45,5 @@ AI-assisted projects. M1 is a CCPM **Plan** milestone — definition, not code.
       project generation)
 - [x] Product PRD created via CCPM Plan and human-approved
 - [x] PRD converted to epic + tasks + GitHub issues
-- [x] Definition task issues executed (#22–#25, #27)
-- [ ] #26 — make the repository public (gated on human go-ahead)
+- [x] Definition task issues executed (#22–#27)
+- [x] Repository made public — the project is open-source (MIT)

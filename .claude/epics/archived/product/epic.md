@@ -1,9 +1,9 @@
 ---
 name: product
-status: in-progress
+status: completed
 created: 2026-05-20T18:53:03Z
-updated: 2026-05-20T19:06:08Z
-progress: 83%
+updated: 2026-05-20T19:10:07Z
+progress: 100%
 prd: .claude/prds/product.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/21
 ---
@@ -89,7 +89,7 @@ Synced to GitHub 2026-05-20 — see `github-mapping.md`.
 - [x] #23 - Competitive positioning teardown (23.md, parallel: true)
 - [x] #24 - Success-metrics tree (24.md, parallel: true)
 - [x] #25 - Reframe README + CLAUDE.md to the product (25.md, parallel: true)
-- [ ] #26 - Open-source readiness (CONTRIBUTING + make repo public) (26.md, parallel: true)
+- [x] #26 - Open-source readiness (CONTRIBUTING + make repo public) (26.md, parallel: true)
 - [x] #27 - Milestone 2 entry-point spec stub (27.md, parallel: false)
 
 Total tasks: 6

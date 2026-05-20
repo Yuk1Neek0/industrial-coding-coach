@@ -73,16 +73,17 @@ This repository is **private on the free plan**, where neither classic branch
 protection nor rulesets are available. The plan permits governance to be
 *configured or documented* — it is documented here.
 
-**Decision (2026-05-20):** branch protection will **not be pursued** for now —
-the maintainer chose not to make the repo public or upgrade to GitHub Pro. The
-intended ruleset above is kept as a record. `main` is therefore unprotected;
-the project relies on **workflow discipline by convention** (feature branches,
-PRs, CI green before merge) as defined in `CLAUDE.md` and ADR 0001.
+**Decision (2026-05-20):** branch protection will **not be pursued**. The
+repository was made public on 2026-05-20 (the project is open-source, MIT) —
+which *does* make rulesets available — but the maintainer chose to drop branch
+protection regardless. The intended ruleset above is kept only as a record.
+`main` relies on **workflow discipline by convention** (feature branches, PRs,
+CI green before merge) per `CLAUDE.md` and ADR 0001.
 
-**If revisited later:** make the repo public or upgrade to Pro, then apply the
-ruleset (`gh api -X POST repos/<repo>/rulesets ...`). For a solo maintainer,
-use `required_approving_review_count: 0` so PRs + CI are required without a
-self-blocking approval gate.
+**If revisited later:** the repo is already public, so the ruleset can be
+applied directly (`gh api -X POST repos/<repo>/rulesets ...`). For a solo
+maintainer, use `required_approving_review_count: 0` so PRs + CI are required
+without a self-blocking approval gate.
 
 What **was** enabled successfully:
 - Dependabot alerts ✅
