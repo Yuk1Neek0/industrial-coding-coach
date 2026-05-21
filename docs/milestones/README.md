@@ -13,3 +13,5 @@ those plans.
 | M0 — AI-Native Foundation | [`M0-ai-native-foundation.md`](M0-ai-native-foundation.md) | ✅ Complete |
 | M1 — Product Reframing | [`M1-product-reframing.md`](M1-product-reframing.md) | ✅ Complete |
 | M2 — Golden Path Catalog | [`M2-golden-path-catalog.md`](M2-golden-path-catalog.md) | ✅ Complete |
+| M3 — Template Registry | [`M3-template-registry.md`](M3-template-registry.md) | ✅ Complete |
+| M11 — GitHub Integration | [`M11-github-integration.md`](M11-github-integration.md) | ✅ Complete |
