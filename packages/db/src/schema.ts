@@ -4,7 +4,13 @@
 // text columns; normalize into related tables later only if query needs require
 // it (ADR 0006).
 
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import {
+  index,
+  integer,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core"
 
 /** One step of a Golden Path's understanding journey. */
 export interface GoldenPathStep {
@@ -151,3 +157,134 @@ export type Template = typeof templates.$inferSelect
 
 /** The shape required to insert a Template. */
 export type NewTemplate = typeof templates.$inferInsert
+
+// ---------------------------------------------------------------------------
+// GitHub repository snapshots — local-first import storage (ADR 0009).
+//
+// A snapshot is an imported GitHub repository, keyed by `owner/repo` + `ref`.
+// `repo_snapshots` holds repo metadata and the full file tree (a JSON column,
+// mirroring the golden_paths list-valued-fields-as-JSON convention). The
+// contents of selected key files are stored as child rows in `repo_files` so
+// large blobs are not packed into the snapshot row. GitHub is contacted only at
+// import time; downstream analysis reads these tables, never the network.
+// ---------------------------------------------------------------------------
+
+/**
+ * One entry of a repository's file tree, as returned by the GitHub recursive
+ * tree API. `type` is `blob` (file) or `tree` (directory).
+ */
+export interface RepoTreeEntry {
+  /** Path relative to the repo root, e.g. `apps/web/package.json`. */
+  path: string
+  type: "blob" | "tree"
+  /** Size in bytes; present for blobs only. */
+  size?: number
+  /** Git object SHA for the entry. */
+  sha: string
+}
+
+/**
+ * An imported GitHub repository snapshot. One row per `owner/repo` + `ref`;
+ * re-importing the same repo/ref updates the row in place (PRD US-3).
+ */
+export const repoSnapshots = sqliteTable(
+  "repo_snapshots",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    /** Repository owner (user or org), e.g. `vercel`. */
+    owner: text("owner").notNull(),
+    /** Repository name, e.g. `next.js`. */
+    repo: text("repo").notNull(),
+    /** The imported ref — a branch, tag, or commit SHA, e.g. `main`. */
+    ref: text("ref").notNull(),
+    /** The resolved commit SHA the snapshot's tree was taken at. */
+    commitSha: text("commit_sha").notNull(),
+    /** Default branch reported by GitHub at import time. */
+    defaultBranch: text("default_branch").notNull(),
+    /** Repository description, if any. */
+    description: text("description"),
+    /** Primary language reported by GitHub, if any. */
+    primaryLanguage: text("primary_language"),
+    /** Whether the source repository is private. */
+    isPrivate: integer("is_private", { mode: "boolean" })
+      .notNull()
+      .$defaultFn(() => false),
+    /** Canonical HTML URL of the repository. */
+    htmlUrl: text("html_url").notNull(),
+    /** The full repository file tree, in repo order. */
+    fileTree: text("file_tree", { mode: "json" })
+      .$type<RepoTreeEntry[]>()
+      .notNull(),
+    /** When this repository was last imported / refreshed. */
+    importedAt: integer("imported_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    /** A repository snapshot is unique per owner/repo/ref. */
+    uniqueIndex("repo_snapshots_owner_repo_ref_unique").on(
+      table.owner,
+      table.repo,
+      table.ref,
+    ),
+  ],
+)
+
+/**
+ * The content of one imported key file (`package.json`, lockfiles, build/
+ * framework config, README, CI workflow files). Child of a `repo_snapshots`
+ * row; deleted with its parent snapshot.
+ */
+export const repoFiles = sqliteTable(
+  "repo_files",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    /** Owning snapshot. */
+    snapshotId: integer("snapshot_id")
+      .notNull()
+      .references(() => repoSnapshots.id, { onDelete: "cascade" }),
+    /** Path relative to the repo root, e.g. `apps/web/package.json`. */
+    path: text("path").notNull(),
+    /** Git blob SHA of the file's content. */
+    sha: text("sha").notNull(),
+    /** File size in bytes as reported by GitHub. */
+    size: integer("size").notNull(),
+    /** The file's text content. */
+    content: text("content").notNull(),
+    /** Why this file was selected as a key file, e.g. `package-manifest`. */
+    category: text("category").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    /** A given path appears at most once per snapshot. */
+    uniqueIndex("repo_files_snapshot_path_unique").on(
+      table.snapshotId,
+      table.path,
+    ),
+    /** Fast lookup of all files for a snapshot. */
+    index("repo_files_snapshot_idx").on(table.snapshotId),
+  ],
+)
+
+/** An imported repository snapshot as read from the database. */
+export type RepoSnapshot = typeof repoSnapshots.$inferSelect
+
+/** The shape required to insert a repository snapshot. */
+export type NewRepoSnapshot = typeof repoSnapshots.$inferInsert
+
+/** An imported key-file row as read from the database. */
+export type RepoFile = typeof repoFiles.$inferSelect
+
+/** The shape required to insert an imported key-file. */
+export type NewRepoFile = typeof repoFiles.$inferInsert
