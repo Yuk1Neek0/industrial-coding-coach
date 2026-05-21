@@ -76,3 +76,21 @@ restores the `→ PR → CI → review` step the development plan specifies.
   Engine)** depends on M3 → it follows M3.
 - When an epic completes, its worktree is removed and the branch deleted after
   merge (CCPM's merge/cleanup flow).
+
+## Amendment — 2026-05-21
+
+During M3/M5 PRD planning, the scope of **M5 (Stack Decision Explainer)** was
+settled as explaining the stack of the user's **actual GitHub repository**. That
+makes M5 depend on **M11 (GitHub Integration)** for remote repo import — so M5
+is no longer independent of the repo-import milestone, and the original
+"M3 ∥ M5" near-term pairing in the Consequences section no longer holds.
+
+**Revised near-term pairing:** **M3 (Template Registry) ∥ M11 (GitHub
+Integration)** run in parallel worktrees — they are genuinely independent
+(curated catalog data vs. ingestion infrastructure). **M4** still follows
+**M3**. **M5** now follows **M11**. The epic-level / worktree / sub-agent
+execution model decided in this ADR is unchanged — only the specific milestone
+pairing is revised.
+
+M11 is pulled forward from "Future Milestone" status by this amendment. See
+`.claude/prds/template-registry.md` and `.claude/prds/github-integration.md`.
