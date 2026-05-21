@@ -34,8 +34,18 @@ export {
 } from "./key-files"
 
 export {
-  importRepository,
   type ImportRepoOptions,
   type ImportResult,
   type SkippedKeyFile,
 } from "./import"
+
+export {
+  importRepository,
+  listImportedRepos,
+  getImportedRepo,
+  getImportedRepoById,
+  getRepoTree,
+  listRepoFiles,
+  getRepoFile,
+  type ImportRepositoryInput,
+} from "./repos"
