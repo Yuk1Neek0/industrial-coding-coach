@@ -70,3 +70,84 @@ export type GoldenPath = typeof goldenPaths.$inferSelect
 
 /** The shape required to insert a Golden Path. */
 export type NewGoldenPath = typeof goldenPaths.$inferInsert
+
+// --- Template Registry (Milestone 3) ---------------------------------------
+//
+// The `templates` table joins `golden_paths` in the same local SQLite store
+// (ADR 0006) — a new table, not a new database. It mirrors the `golden_paths`
+// style: list-valued fields are JSON text columns; normalize later only if
+// query needs require it. A Golden Path's `templatesReferenced` slugs resolve
+// to rows here.
+
+/** A risk a template carries — a free-text caution. */
+export type TemplateRisk = string
+
+/** An alternative to a template and why it might be chosen instead. */
+export interface TemplateAlternative {
+  name: string
+  reason: string
+}
+
+/** A cited source backing a template's claims. */
+export interface TemplateSource {
+  label: string
+  url?: string
+}
+
+/**
+ * A structured fit factor: one dimension along which a template's suitability
+ * can be judged. M3 stores these; M4 scores against them.
+ */
+export interface TemplateFitFactor {
+  factor: string
+  detail: string
+}
+
+/**
+ * The Template Registry. One row per real-world building block (project
+ * scaffold, agentic workflow, CI config, security tool, doc/spec template,
+ * contract, observability starter) that Golden Paths build on.
+ */
+export const templates = sqliteTable("templates", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  /** Stable kebab-case identifier, unique across the registry. */
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  /** Browsing category, e.g. "Project Scaffold", "CI", "Security". */
+  category: text("category").notNull(),
+  summary: text("summary").notNull(),
+  /** What concrete artifacts/output the template produces (prose). */
+  whatItGenerates: text("what_it_generates").notNull(),
+  /** Why this template is used / the problem it solves (prose). */
+  whyUsed: text("why_used").notNull(),
+  /** When this template fits a project or Golden Path (prose). */
+  fitCriteria: text("fit_criteria").notNull(),
+  /** Structured fit factors — the dimensions M4 will score against. */
+  fitFactors: text("fit_factors", { mode: "json" })
+    .$type<TemplateFitFactor[]>()
+    .notNull(),
+  /** Risks/cautions the template carries. */
+  risks: text("risks", { mode: "json" }).$type<TemplateRisk[]>().notNull(),
+  /** Alternatives to this template and the reason each might be chosen. */
+  alternatives: text("alternatives", { mode: "json" })
+    .$type<TemplateAlternative[]>()
+    .notNull(),
+  /** What the user should learn from / about this template (prose). */
+  learningNotes: text("learning_notes").notNull(),
+  /** Cited sources backing the entry. */
+  sources: text("sources", { mode: "json" })
+    .$type<TemplateSource[]>()
+    .notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+})
+
+/** A Template row as read from the registry. */
+export type Template = typeof templates.$inferSelect
+
+/** The shape required to insert a Template. */
+export type NewTemplate = typeof templates.$inferInsert
