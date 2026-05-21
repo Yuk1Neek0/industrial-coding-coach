@@ -24,3 +24,18 @@ export {
   type GitHubOk,
   type GitHubResult,
 } from "./errors"
+
+export {
+  classifyKeyFile,
+  selectKeyFiles,
+  MAX_KEY_FILE_BYTES,
+  type KeyFileCategory,
+  type SelectedKeyFile,
+} from "./key-files"
+
+export {
+  importRepository,
+  type ImportRepoOptions,
+  type ImportResult,
+  type SkippedKeyFile,
+} from "./import"
