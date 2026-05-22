@@ -103,6 +103,12 @@ importers:
 
   packages/db:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.98.0
+        version: 0.98.0(zod@3.25.76)
+      '@workspace/ai':
+        specifier: workspace:*
+        version: link:../ai
       better-sqlite3:
         specifier: ^12.10.0
         version: 12.10.0

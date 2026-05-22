@@ -15,6 +15,16 @@ export {
 } from "./detect"
 
 export {
+  explainStack,
+  parseExplanationContent,
+  ExplainStackError,
+  type ExplainStackData,
+  type ExplainStackErrorKind,
+  type ExplainStackInput,
+  type ExplainStackResult,
+} from "./explain"
+
+export {
   checkFileReferences,
   checkStackExplanationIntegrity,
   createStackExplanation,
