@@ -1,7 +1,7 @@
 ---
 name: project-logic-mapper
 description: M6 — a LangChain.js + LangGraph agentic + RAG pipeline that maps an imported repo's logic (architecture overview, key-file map, request/data flow, state flow, AI-call flow, Mermaid diagrams, debug path); maps persist to SQLite.
-status: backlog
+status: completed
 created: 2026-05-22T13:47:16Z
 ---
 

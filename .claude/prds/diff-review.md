@@ -1,7 +1,7 @@
 ---
 name: diff-review
 description: M8 — a bounded Anthropic SDK call reviews an AI-generated PR (changed-file + core-logic explanation, risk analysis, test suggestions, comprehension questions) and grades the user's answers into a score + weak areas; reviews persist to SQLite.
-status: backlog
+status: completed
 created: 2026-05-22T13:47:16Z
 ---
 
