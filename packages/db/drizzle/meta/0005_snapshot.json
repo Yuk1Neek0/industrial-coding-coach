@@ -1,133 +1,9 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "01099588-33cf-41ad-8546-fca0f1a043b6",
+  "id": "2bef10c5-48a8-463e-9e90-edbc3edec832",
   "prevId": "1ba45a58-e5d6-474f-a535-ff8cadc0c869",
   "tables": {
-    "diff_reviews": {
-      "name": "diff_reviews",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "snapshot_id": {
-          "name": "snapshot_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "pr_number": {
-          "name": "pr_number",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "changed_files": {
-          "name": "changed_files",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "core_logic_explanation": {
-          "name": "core_logic_explanation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "risk_analysis": {
-          "name": "risk_analysis",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "test_suggestions": {
-          "name": "test_suggestions",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "comprehension_questions": {
-          "name": "comprehension_questions",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "answers": {
-          "name": "answers",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "score": {
-          "name": "score",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "weak_areas": {
-          "name": "weak_areas",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "diff_reviews_snapshot_pr_unique": {
-          "name": "diff_reviews_snapshot_pr_unique",
-          "columns": [
-            "snapshot_id",
-            "pr_number"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {
-        "diff_reviews_snapshot_id_repo_snapshots_id_fk": {
-          "name": "diff_reviews_snapshot_id_repo_snapshots_id_fk",
-          "tableFrom": "diff_reviews",
-          "tableTo": "repo_snapshots",
-          "columnsFrom": [
-            "snapshot_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "golden_paths": {
       "name": "golden_paths",
       "columns": {
@@ -247,6 +123,115 @@
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "project_maps": {
+      "name": "project_maps",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "snapshot_id": {
+          "name": "snapshot_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "architecture_overview": {
+          "name": "architecture_overview",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "key_file_map": {
+          "name": "key_file_map",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_data_flow": {
+          "name": "request_data_flow",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "state_flow": {
+          "name": "state_flow",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ai_call_flow": {
+          "name": "ai_call_flow",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mermaid_diagram": {
+          "name": "mermaid_diagram",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "debug_path": {
+          "name": "debug_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "project_maps_snapshot_unique": {
+          "name": "project_maps_snapshot_unique",
+          "columns": [
+            "snapshot_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "project_maps_snapshot_id_repo_snapshots_id_fk": {
+          "name": "project_maps_snapshot_id_repo_snapshots_id_fk",
+          "tableFrom": "project_maps",
+          "tableTo": "repo_snapshots",
+          "columnsFrom": [
+            "snapshot_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
