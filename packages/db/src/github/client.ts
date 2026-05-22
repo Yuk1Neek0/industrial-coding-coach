@@ -86,6 +86,61 @@ export interface FileContent {
   content: string
 }
 
+/** GitHub's REST shape for `GET /repos/{owner}/{repo}/pulls/{number}`. */
+export interface PullRequestApiResponse {
+  number: number
+  title: string
+  /** PR description body — may be `null` when empty. */
+  body: string | null
+  state: string
+  html_url: string
+  /** Total additions across the PR, summed by GitHub. */
+  additions: number
+  /** Total deletions across the PR, summed by GitHub. */
+  deletions: number
+  /** Number of files the PR changes, reported by GitHub. */
+  changed_files: number
+  head: { ref: string; sha: string }
+  base: { ref: string; sha: string }
+}
+
+/** GitHub's REST shape for one entry of `GET .../pulls/{number}/files`. */
+export interface PullRequestFileApiResponse {
+  filename: string
+  /** `added` | `removed` | `modified` | `renamed` | `copied` | `changed` | `unchanged`. */
+  status: string
+  additions: number
+  deletions: number
+  changes: number
+  /** Prior path for a rename; absent otherwise. */
+  previous_filename?: string
+  /**
+   * The per-file unified diff hunk text. Absent for binary files and for very
+   * large files GitHub omits the patch on.
+   */
+  patch?: string
+}
+
+/** GitHub's REST shape for one entry of `GET .../issues/{number}/timeline`. */
+interface TimelineEventApiResponse {
+  event: string
+  source?: {
+    type?: string
+    issue?: { number: number; pull_request?: unknown }
+  }
+}
+
+/** GitHub's REST shape for `GET /repos/{owner}/{repo}/issues/{number}`. */
+export interface IssueApiResponse {
+  number: number
+  title: string
+  body: string | null
+  state: string
+  html_url: string
+  /** Present only when the issue is itself a pull request. */
+  pull_request?: unknown
+}
+
 /** Options for {@link createGitHubClient}. */
 export interface GitHubClientOptions {
   /**
@@ -291,7 +346,57 @@ export interface GitHubClient {
     filePath: string,
     gitRef?: string,
   ): Promise<GitHubResult<FileContent>>
+  /** Fetch a pull request's metadata (title, body, head/base, totals). */
+  getPullRequest(
+    ref: RepoRef,
+    prNumber: number,
+  ): Promise<GitHubResult<PullRequestApiResponse>>
+  /**
+   * Fetch a pull request's changed-file list, paginated. Each entry carries the
+   * per-file unified diff `patch` (absent for binary/oversize files).
+   *
+   * @param maxFiles - hard cap on files fetched, so a very large PR cannot run
+   *   the client unbounded across pages (ADR 0009 §2 — stay under rate limits).
+   */
+  getPullRequestFiles(
+    ref: RepoRef,
+    prNumber: number,
+    maxFiles?: number,
+  ): Promise<GitHubResult<{ files: PullRequestFileApiResponse[]; truncated: boolean }>>
+  /**
+   * Fetch the issue number a pull request links to (the "Closes #N" / linked
+   * issue), or `null` when the PR links no issue. Uses the issue timeline's
+   * `cross-referenced` / `connected` events plus a body-keyword fallback.
+   */
+  getLinkedIssueNumber(
+    ref: RepoRef,
+    prNumber: number,
+    prBody?: string | null,
+  ): Promise<GitHubResult<number | null>>
+  /** Fetch a single issue's metadata (title, body, state). */
+  getIssue(
+    ref: RepoRef,
+    issueNumber: number,
+  ): Promise<GitHubResult<IssueApiResponse>>
 }
+
+/** Default page size for the PR files endpoint (GitHub's max is 100). */
+const PR_FILES_PAGE_SIZE = 100
+
+/**
+ * Default cap on the number of changed files fetched for one PR. A PR larger
+ * than this is fetched up to the cap and flagged `truncated`, so the change
+ * model stays bounded for a very large PR (ADR 0009 §2).
+ */
+export const DEFAULT_MAX_PR_FILES = 300
+
+/**
+ * GitHub keywords that, followed by `#N` (or `owner/repo#N`), link a PR to an
+ * issue it will close. Matched case-insensitively in a PR body as a fallback
+ * when the timeline carries no connected/cross-referenced event.
+ */
+const ISSUE_LINK_KEYWORDS =
+  /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\b[\s:]+(?:[\w.-]+\/[\w.-]+)?#(\d+)/i
 
 /**
  * Create a read-only GitHub REST API client (ADR 0009, Issue #38).
@@ -491,6 +596,103 @@ export function createGitHubClient(
         size: raw.size,
         content: decoded,
       })
+    },
+
+    async getPullRequest(ref, prNumber) {
+      return getJson<PullRequestApiResponse>(
+        `/repos/${encodeURIComponent(ref.owner)}/${encodeURIComponent(
+          ref.repo,
+        )}/pulls/${encodeURIComponent(String(prNumber))}`,
+        `fetching pull request #${prNumber} of ${ref.owner}/${ref.repo}`,
+      )
+    },
+
+    async getPullRequestFiles(ref, prNumber, maxFiles = DEFAULT_MAX_PR_FILES) {
+      const cap = Math.max(0, maxFiles)
+      const collected: PullRequestFileApiResponse[] = []
+      let page = 1
+      // Walk pages until we hit the cap, a short (final) page, or an empty page.
+      // The cap bounds the request count for a very large PR (ADR 0009 §2).
+      for (;;) {
+        const result = await getJson<PullRequestFileApiResponse[]>(
+          `/repos/${encodeURIComponent(ref.owner)}/${encodeURIComponent(
+            ref.repo,
+          )}/pulls/${encodeURIComponent(
+            String(prNumber),
+          )}/files?per_page=${PR_FILES_PAGE_SIZE}&page=${page}`,
+          `fetching changed files of pull request #${prNumber} of ` +
+            `${ref.owner}/${ref.repo}`,
+        )
+        if (!result.ok) return result
+        const pageFiles = result.data
+        collected.push(...pageFiles)
+        const lastPage = pageFiles.length < PR_FILES_PAGE_SIZE
+        if (collected.length >= cap) {
+          // More files exist than the cap allows, OR the cap landed exactly on
+          // a page boundary with a further page still to come.
+          const truncated = collected.length > cap || !lastPage
+          return ok({ files: collected.slice(0, cap), truncated })
+        }
+        if (lastPage) return ok({ files: collected, truncated: false })
+        page += 1
+      }
+    },
+
+    async getLinkedIssueNumber(ref, prNumber, prBody) {
+      // 1. Authoritative source: the PR-issue timeline. A "connected" or
+      //    "cross-referenced" event to a plain issue (not a PR) is a link.
+      const timeline = await getJson<TimelineEventApiResponse[]>(
+        `/repos/${encodeURIComponent(ref.owner)}/${encodeURIComponent(
+          ref.repo,
+        )}/issues/${encodeURIComponent(
+          String(prNumber),
+        )}/timeline?per_page=${PR_FILES_PAGE_SIZE}`,
+        `fetching the timeline of pull request #${prNumber} of ` +
+          `${ref.owner}/${ref.repo}`,
+      )
+      if (timeline.ok) {
+        for (const event of timeline.data) {
+          if (
+            event.event !== "connected" &&
+            event.event !== "cross-referenced"
+          ) {
+            continue
+          }
+          const issue = event.source?.issue
+          // Only a plain issue counts — skip cross-references to other PRs.
+          if (issue && issue.pull_request === undefined) {
+            return ok(issue.number)
+          }
+        }
+      } else if (timeline.error.kind !== "not_found") {
+        // A not_found here just means no timeline; any other error is real.
+        return timeline
+      }
+
+      // 2. Fallback: a "Closes #N" keyword in the PR body. Resolve the PR body
+      //    ourselves when the caller did not pass one.
+      let body = prBody ?? null
+      if (body === undefined || body === null) {
+        const pr = await this.getPullRequest(ref, prNumber)
+        if (!pr.ok) return pr
+        body = pr.data.body
+      }
+      if (body) {
+        const match = ISSUE_LINK_KEYWORDS.exec(body)
+        if (match) return ok(Number(match[1]))
+      }
+
+      // No linked issue — a valid, gracefully handled state (Issue #111).
+      return ok(null)
+    },
+
+    async getIssue(ref, issueNumber) {
+      return getJson<IssueApiResponse>(
+        `/repos/${encodeURIComponent(ref.owner)}/${encodeURIComponent(
+          ref.repo,
+        )}/issues/${encodeURIComponent(String(issueNumber))}`,
+        `fetching issue #${issueNumber} of ${ref.owner}/${ref.repo}`,
+      )
     },
   }
 }
