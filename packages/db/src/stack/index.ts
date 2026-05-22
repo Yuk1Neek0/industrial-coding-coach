@@ -13,3 +13,15 @@ export {
   type DetectionFile,
   type ToolCategory,
 } from "./detect"
+
+export {
+  checkFileReferences,
+  checkStackExplanationIntegrity,
+  createStackExplanation,
+  getStackExplanation,
+  getStackExplanationByRepo,
+  saveStackExplanation,
+  updateStackExplanation,
+  type FileReferenceCheck,
+  type StackExplanationContent,
+} from "./explanations"
