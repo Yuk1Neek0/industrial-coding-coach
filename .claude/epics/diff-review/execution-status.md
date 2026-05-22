@@ -16,14 +16,19 @@ Verification: `pnpm typecheck` 4/4, `pnpm test` 237 passing.
 Verification: `pnpm typecheck` 4/4, `pnpm test` 277 passing, `pnpm lint` clean.
 Commits `394d61a` (#114), `67fde32` (#112) pushed to `origin/epic/diff-review`.
 
+## Wave 3 — Complete (finished 2026-05-22)
+- #113 Understanding-check grading call + mocked tests — ✅ done
+
+Verification: `pnpm typecheck` 4/4, `pnpm test` 295 passing, `pnpm lint` clean.
+Commit `1499f60` pushed to `origin/epic/diff-review`.
+
 ## Queued
-- #113 Understanding-check grading call — unblocked (#112 done); consumes the
-  `ComprehensionQuestion` shape from #112, persists via `gradeDiffReview` (#114)
-- #116 Integrate Diff Review UI — waits on #113 (#112, #114, #115 done)
+- #116 Integrate Diff Review UI — unblocked (#112, #113, #114, #115 done)
 
 ## Completed
 - #110, #111, #115 — Wave 1
 - #112, #114 — Wave 2
+- #113 — Wave 3
 
 ## Notes
 - Migration numbered `0005` — collision with the project-logic-mapper epic's

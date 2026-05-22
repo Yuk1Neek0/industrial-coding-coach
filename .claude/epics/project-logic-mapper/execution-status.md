@@ -17,13 +17,27 @@ Verification: `pnpm typecheck` 4/4, `pnpm test` 245 passing.
 Verification: `pnpm typecheck` 4/4, `pnpm test` (ai 37, db 264) passing, `pnpm lint` clean.
 Commits `ec441f8` (#104), `e193ec2` (#106) pushed to `origin/epic/project-logic-mapper`.
 
+## Wave 3 — Complete (finished 2026-05-22)
+- #105 LangGraph mapping pipeline + mocked tests — ✅ done
+
+Verification: `pnpm typecheck` 4/4, `pnpm test` 331 passing, `pnpm lint` clean.
+Commit `2ead337` pushed to `origin/epic/project-logic-mapper`.
+
 ## Queued
-- #105 LangGraph mapping pipeline — unblocked (#101, #103, #104 done)
-- #108 Integrate Project Logic Mapper UI — waits on #105 (#106, #107 done)
+- #108 Integrate Project Logic Mapper UI — unblocked (#105, #106, #107 done)
 
 ## Completed
 - #101, #102, #103, #107 — Wave 1
 - #104, #106 — Wave 2
+- #105 — Wave 3
+
+## Flagged for human review
+- #105's agentic nodes use a plain-text JSON-output model seam instead of the
+  tool-use round-trip the M5/#112 calls use — deliberate (smaller deterministic
+  CI mock); confirm acceptable at epic review.
+- `ProjectMapContent` is matched structurally between `packages/ai` (pipeline
+  output) and `packages/db` (#106 persistence) to avoid a dependency cycle —
+  keep the two shapes in sync if either changes.
 
 ## Notes
 - #101's files landed inside commit `e4b00e8` (labeled `Issue #107:`) due to a
