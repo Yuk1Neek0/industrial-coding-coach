@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./schema": "./src/schema.ts",
     "./client": "./src/client.ts",
-    "./github": "./src/github/index.ts"
+    "./github": "./src/github/index.ts",
+    "./stack": "./src/stack/index.ts"
   },
   "scripts": {
     "lint": "eslint",
@@ -30,6 +31,7 @@
     "vitest": "^4.1.7"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.98.0",
     "@workspace/ai": "workspace:*",
     "better-sqlite3": "^12.10.0",
     "drizzle-orm": "^0.45.2"
