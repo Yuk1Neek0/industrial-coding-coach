@@ -7,14 +7,33 @@
 export {
   createGitHubClient,
   parseRepoUrl,
+  DEFAULT_MAX_PR_FILES,
   type FileContent,
   type GitHubClient,
   type GitHubClientOptions,
+  type IssueApiResponse,
+  type PullRequestApiResponse,
+  type PullRequestFileApiResponse,
   type RepoMetadata,
   type RepoRef,
   type RepoTree,
   type TreeEntry,
 } from "./client"
+
+export {
+  buildPullRequestChangeModel,
+  extractAcceptanceCriteria,
+  parseUnifiedDiff,
+  MAX_PATCH_BYTES,
+  type AcceptanceCriterion,
+  type ChangedFile,
+  type DiffHunk,
+  type DiffLine,
+  type FileChangeStatus,
+  type LinkedIssue,
+  type PullRequestChangeModel,
+  type PullRequestModelOptions,
+} from "./pull-requests"
 
 export {
   GitHubError,

@@ -586,3 +586,126 @@ export type ProjectMap = typeof projectMaps.$inferSelect
 
 /** The shape required to insert a project logic map. */
 export type NewProjectMap = typeof projectMaps.$inferInsert
+
+// ---------------------------------------------------------------------------
+// Diff reviews — M8 Diff Review Coach output (diff-review PRD).
+//
+// One row per reviewed pull request, keyed by repo identity (a `repo_snapshots`
+// child) plus PR number. A row holds the six generated review outputs, the
+// user's answers to the comprehension questions, and the grading score with a
+// weak-area breakdown. Joins the same local SQLite store (ADR 0006) — a new
+// table, not a new database. List-valued fields are JSON text columns,
+// mirroring the `stack_explanations` convention. The answers and score columns
+// are nullable: a review is generated first, then graded once the user
+// completes the understanding check.
+// ---------------------------------------------------------------------------
+
+/** A changed file in the PR, explained in plain language. */
+export interface ChangedFileExplanation {
+  /** Path of the changed file, relative to the repo root. */
+  path: string
+  /** What changed in this file and why it matters, in plain language. */
+  explanation: string
+}
+
+/** A risk the pull request introduces, and how it might surface. */
+export interface DiffRisk {
+  /** A short label for the risk. */
+  title: string
+  /** What could go wrong and where it would surface. */
+  detail: string
+}
+
+/** A suggested test that would cover the change. */
+export interface TestSuggestion {
+  /** What the suggested test should verify. */
+  description: string
+  /** Why this test matters for the change. */
+  rationale: string
+}
+
+/** A comprehension question the user must answer to defend the change. */
+export interface ComprehensionQuestion {
+  /** Stable identifier of the question, used to key the user's answer. */
+  id: string
+  /** The question text. */
+  prompt: string
+}
+
+/** The user's answer to one comprehension question. */
+export interface ComprehensionAnswer {
+  /** The `ComprehensionQuestion.id` this answer responds to. */
+  questionId: string
+  /** The user's free-text answer. */
+  answer: string
+}
+
+/** A weak area surfaced by grading, with how strongly it showed. */
+export interface WeakArea {
+  /** The area of understanding that was weak, e.g. `risk-analysis`. */
+  area: string
+  /** Why this area was judged weak, in plain language. */
+  detail: string
+}
+
+/**
+ * A diff review produced by the M8 Diff Review Coach for one pull request.
+ * The six generated outputs are filled at review time; `answers`, `score`, and
+ * `weakAreas` stay null until the user completes the understanding check and
+ * the answers are graded.
+ */
+export const diffReviews = sqliteTable(
+  "diff_reviews",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    /** The imported repo snapshot this review's repo identity is anchored to. */
+    snapshotId: integer("snapshot_id")
+      .notNull()
+      .references(() => repoSnapshots.id, { onDelete: "cascade" }),
+    /** The reviewed pull request's number within the repo. */
+    prNumber: integer("pr_number").notNull(),
+    /** Plain-language explanation of each changed file in the PR. */
+    changedFiles: text("changed_files", { mode: "json" })
+      .$type<ChangedFileExplanation[]>()
+      .notNull(),
+    /** Plain-language explanation of the PR's core logic (prose). */
+    coreLogicExplanation: text("core_logic_explanation").notNull(),
+    /** Risks the PR introduces. */
+    riskAnalysis: text("risk_analysis", { mode: "json" })
+      .$type<DiffRisk[]>()
+      .notNull(),
+    /** Tests suggested to cover the change. */
+    testSuggestions: text("test_suggestions", { mode: "json" })
+      .$type<TestSuggestion[]>()
+      .notNull(),
+    /** Comprehension questions the user must answer to defend the change. */
+    comprehensionQuestions: text("comprehension_questions", { mode: "json" })
+      .$type<ComprehensionQuestion[]>()
+      .notNull(),
+    /** The user's answers; null until the understanding check is completed. */
+    answers: text("answers", { mode: "json" }).$type<ComprehensionAnswer[]>(),
+    /** The grading score (0–100); null until the answers are graded. */
+    score: integer("score"),
+    /** Weak areas surfaced by grading; null until the answers are graded. */
+    weakAreas: text("weak_areas", { mode: "json" }).$type<WeakArea[]>(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    /** One review per snapshot + PR number; re-reviewing updates the row. */
+    uniqueIndex("diff_reviews_snapshot_pr_unique").on(
+      table.snapshotId,
+      table.prNumber,
+    ),
+  ],
+)
+
+/** A diff review as read from the database. */
+export type DiffReview = typeof diffReviews.$inferSelect
+
+/** The shape required to insert a diff review. */
+export type NewDiffReview = typeof diffReviews.$inferInsert
