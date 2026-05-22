@@ -2,8 +2,8 @@
 name: recommendation-engine
 status: in-progress
 created: 2026-05-22T00:20:11Z
-updated: 2026-05-22T02:20:00Z
-progress: 67%
+updated: 2026-05-22T02:45:00Z
+progress: 83%
 prd: .claude/prds/recommendation-engine.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/76
 ---
@@ -121,7 +121,7 @@ Medium — 6 tasks. Critical path: task 1 → task 3 (narrative) → task 6
 - [x] #78 - Deterministic scoring module + tests (parallel: true)
 - [x] #79 - Recommendation narrative via Anthropic SDK + mocked tests (parallel: true)
 - [x] #80 - Recommendations data-access layer + referential-integrity test (parallel: true)
-- [ ] #81 - Intake + Result page specs + Claude Design prompts (parallel: true)
+- [x] #81 - Intake + Result page specs + Claude Design prompts (parallel: true)
 - [ ] #82 - Integrate the Recommendation Intake + Result UI (parallel: false)
 
 Total tasks: 6
