@@ -119,6 +119,20 @@ function makeFakeClient(options: FakeClientOptions = {}): GitHubClient {
       }
       return Promise.resolve(ok(file))
     },
+    // The import path never touches PR endpoints; these stubs only satisfy the
+    // GitHubClient interface (PR fetching is covered by pull-requests.test.ts).
+    getPullRequest() {
+      return Promise.reject(new Error("not used by the import path"))
+    },
+    getPullRequestFiles() {
+      return Promise.reject(new Error("not used by the import path"))
+    },
+    getLinkedIssueNumber() {
+      return Promise.reject(new Error("not used by the import path"))
+    },
+    getIssue() {
+      return Promise.reject(new Error("not used by the import path"))
+    },
   }
 }
 
