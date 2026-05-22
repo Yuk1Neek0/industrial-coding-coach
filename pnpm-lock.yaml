@@ -105,7 +105,7 @@ importers:
     dependencies:
       '@anthropic-ai/sdk':
         specifier: ^0.98.0
-        version: 0.98.0(zod@3.25.76)
+        version: 0.98.0(zod@4.4.3)
       '@workspace/ai':
         specifier: workspace:*
         version: link:../ai
