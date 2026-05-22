@@ -21,7 +21,7 @@
     "@types/node": "^25.9.1",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
-    "eslint": "^9.39.2",
+    "eslint": "^10.4.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.7"
   },

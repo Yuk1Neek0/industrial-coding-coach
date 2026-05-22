@@ -33,7 +33,7 @@
     "@workspace/typescript-config": "workspace:*",
     "better-sqlite3": "^12.10.0",
     "drizzle-orm": "^0.45.2",
-    "eslint": "^9.39.2",
+    "eslint": "^10.4.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.7"
   }
