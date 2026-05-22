@@ -75,6 +75,14 @@ implementation, and review.
 
 - **No product feature** may be implemented without a PRD/spec and a CCPM
   task / GitHub Issue. (Foundation/setup work is exempt only during Milestone 0.)
+- **Maintenance chores are exempt from CCPM planning.** Dependency upgrades
+  (including Dependabot PRs), toolchain/config fixes, lockfile refreshes, and
+  CI/build tweaks are *not* product features — they do **not** require a PRD,
+  epic, or CCPM task. They still follow the standard delivery discipline: a
+  dedicated `chore/<name>` branch, the bounded-work statement (issue, files,
+  plan, verification, risks) before and after editing, local verification, AI
+  self-review, a PR, passing CI, and human review/merge. If a "chore" changes
+  product behavior or scope, it is a feature — route it through CCPM instead.
 - **One bounded issue at a time** within a stream. State the issue, files to
   change, plan, verification commands, and risks before editing. After editing,
   summarize changed files, the acceptance-criteria checklist, verification
