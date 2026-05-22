@@ -1,7 +1,7 @@
 # M5 — Stack Decision Explainer
 
-**State:** 🚧 Implementation complete — epic #83; all tasks #84–#89 done on
-`epic/stack-explainer`; PR #92 in review/CI · **Date:** 2026-05-22
+**State:** ✅ Complete — epic #83 done & archived; all tasks #84–#89 merged to
+`main` via PR #92 · **Date:** 2026-05-22
 
 Goal: help a job-seeking junior dev understand *why* their AI-assisted project
 uses its technology stack — a stack decision map, per-tool purpose, alternatives
@@ -90,8 +90,9 @@ imported-repo chooser) and `/stack/[owner]/[repo]` (the Stack Explanation
 page). The explanation runs server-side via a Server Action — the page never
 calls the Anthropic SDK. See `docs/design/ui-integration-notes/`.
 
-## Definition of Done — remaining
+## Definition of Done
 
-Implementation is complete; the milestone closes when **PR #92** passes CI and
-a human approves and merges it. Exercising the full explained flow needs an
-imported repo (M11) and `ANTHROPIC_API_KEY` set locally.
+Complete — **PR #92** passed CI, was reviewed, and merged to `main`; the epic
+is closed and archived to `.claude/epics/archived/stack-explainer/`. Exercising
+the full explained flow needs an imported repo (M11) and `ANTHROPIC_API_KEY`
+set locally.
