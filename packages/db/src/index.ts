@@ -1,5 +1,6 @@
 export * from "./catalog"
 export * from "./client"
 export * from "./github"
+export * from "./recommendation-scoring"
 export * from "./schema"
 export * from "./templates"
