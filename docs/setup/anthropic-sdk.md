@@ -27,9 +27,9 @@ In this pnpm workspace it was installed into the `@workspace/ai` package:
 pnpm --filter @workspace/ai add @anthropic-ai/sdk
 ```
 
-The exact installed version is pinned in `packages/ai/package.json`
-(`dependencies."@anthropic-ai/sdk"`); pnpm records the resolved version in the
-workspace lockfile.
+The installed version is pinned in `packages/ai/package.json` as
+`@anthropic-ai/sdk@^0.98.0`; pnpm records the exact resolved version in the
+workspace lockfile. Dependabot surfaces future upgrades.
 
 ## Requirements
 
