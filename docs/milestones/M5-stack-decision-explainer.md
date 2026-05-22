@@ -1,8 +1,7 @@
 # M5 — Stack Decision Explainer
 
-**State:** 🚧 In progress — epic #83; backend (#84–#87) + UI specs (#88) done on
-`epic/stack-explainer`; UI integration (#89) blocked on the Claude Design
-hand-off · **Date:** 2026-05-22
+**State:** 🚧 Implementation complete — epic #83; all tasks #84–#89 done on
+`epic/stack-explainer`; PR #92 in review/CI · **Date:** 2026-05-22
 
 Goal: help a job-seeking junior dev understand *why* their AI-assisted project
 uses its technology stack — a stack decision map, per-tool purpose, alternatives
@@ -35,7 +34,7 @@ points — all tied to the actual imported repo, never generic tutorial text.
 | 1 | CCPM Plan — PRD `stack-explainer.md` | Done — approved |
 | 2 | CCPM Epic → Structure → Sync | Done — epic #83, tasks #84–#89 |
 | 3 | Execution — backend + UI specs | Done — #84–#88 (see backlog) |
-| 4 | UI integration | Blocked — #89 awaits Claude Design drafts |
+| 4 | UI integration | Done — #89, Claude Design hand-off integrated |
 
 ## Execution backlog
 
@@ -46,11 +45,10 @@ points — all tied to the actual imported repo, never generic tutorial text.
 | #86 | Stack explanation via Anthropic SDK + mocked tests | ✅ Done — `a699bd1` |
 | #87 | Stack-explanations data-access layer + integrity check | ✅ Done — `f9a31bb` |
 | #88 | Stack Explainer page specs + Claude Design prompts | ✅ Done |
-| #89 | Integrate the Stack Explainer UI | ⏸ Blocked — Claude Design hand-off |
+| #89 | Integrate the Stack Explainer UI | ✅ Done |
 
-#84–#88 are implemented on the `epic/stack-explainer` worktree branch and
-land via a pull request for human review + CI. #89 cannot start until the user
-runs the #88 prompts in Claude Design and returns the drafts.
+All six tasks are implemented on the `epic/stack-explainer` branch and land via
+**PR #92** for human review + CI.
 
 ## Delivered (so far)
 
@@ -80,12 +78,20 @@ runs the #88 prompts in Claude Design and returns the drafts.
 - [x] Explanation is tied to the project, not generic tutorial text — the call
       reads real snapshot files via tool use; the integrity check enforces that
       cited paths resolve.
-- [ ] The three UIs are integrated into `apps/web` — task #89, pending the
-      Claude Design hand-off.
+- [x] The three UIs are integrated into `apps/web` — task #89: `/stack` and
+      `/stack/[owner]/[repo]`, wired to `explainStack` / `saveStackExplanation`
+      / `getStackExplanationByRepo` via the `explainStackAction` Server Action.
 
-## Next step — Claude Design hand-off
+## UI integration (#89)
 
-#88 ends in a hand-off: the user runs the three prompts under
-`docs/design/ui-prompts/` in Claude Design, then returns the drafts. #89
-integrates them into `apps/web` and wires the page to `explainStack` /
-`saveStackExplanation` / `getStackExplanationByRepo` via a Server Action.
+The user generated the three UIs in Claude Design and returned the handoff
+bundle; #89 recreated them in the App Router stack. New routes: `/stack` (the
+imported-repo chooser) and `/stack/[owner]/[repo]` (the Stack Explanation
+page). The explanation runs server-side via a Server Action — the page never
+calls the Anthropic SDK. See `docs/design/ui-integration-notes/`.
+
+## Definition of Done — remaining
+
+Implementation is complete; the milestone closes when **PR #92** passes CI and
+a human approves and merges it. Exercising the full explained flow needs an
+imported repo (M11) and `ANTHROPIC_API_KEY` set locally.
