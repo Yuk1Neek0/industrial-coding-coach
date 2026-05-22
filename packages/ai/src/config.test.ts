@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import { getAnthropicApiKey, hasAnthropicApiKey } from "./config"
-import { MissingApiKeyError } from "./errors"
+import { LlmError } from "./errors"
 
 describe("Anthropic API key config accessor", () => {
   const original = process.env.ANTHROPIC_API_KEY
@@ -28,13 +28,20 @@ describe("Anthropic API key config accessor", () => {
     expect(getAnthropicApiKey()).toBe("sk-ant-test-123")
   })
 
-  it("getAnthropicApiKey throws MissingApiKeyError when unset", () => {
-    expect(() => getAnthropicApiKey()).toThrow(MissingApiKeyError)
+  it("getAnthropicApiKey throws a typed missing_api_key error when unset", () => {
+    let thrown: unknown
+    try {
+      getAnthropicApiKey()
+    } catch (err) {
+      thrown = err
+    }
+    expect(thrown).toBeInstanceOf(LlmError)
+    expect((thrown as LlmError).kind).toBe("missing_api_key")
   })
 
-  it("getAnthropicApiKey throws MissingApiKeyError when blank", () => {
+  it("getAnthropicApiKey throws when the key is blank", () => {
     process.env.ANTHROPIC_API_KEY = "   "
-    expect(() => getAnthropicApiKey()).toThrow(MissingApiKeyError)
+    expect(() => getAnthropicApiKey()).toThrow(LlmError)
   })
 
   it("hasAnthropicApiKey reflects whether a key is configured", () => {

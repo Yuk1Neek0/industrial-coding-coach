@@ -1,4 +1,4 @@
-import { MissingApiKeyError } from "./errors"
+import { missingApiKeyError } from "./errors"
 
 /**
  * Configuration accessor for the Anthropic API key.
@@ -14,12 +14,13 @@ export const ANTHROPIC_API_KEY_ENV = "ANTHROPIC_API_KEY" as const
 /**
  * Reads and returns the Anthropic API key from the environment.
  *
- * @throws {MissingApiKeyError} when `ANTHROPIC_API_KEY` is unset or blank.
+ * @throws {import("./errors").LlmError} kind `missing_api_key` when
+ *   `ANTHROPIC_API_KEY` is unset or blank.
  */
 export function getAnthropicApiKey(): string {
   const key = process.env[ANTHROPIC_API_KEY_ENV]?.trim()
   if (!key) {
-    throw new MissingApiKeyError()
+    throw missingApiKeyError()
   }
   return key
 }
