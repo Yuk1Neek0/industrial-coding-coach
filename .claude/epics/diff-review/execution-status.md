@@ -9,16 +9,21 @@ Worktree: `../epic-diff-review/` (branch `epic/diff-review`)
 
 Verification: `pnpm typecheck` 4/4, `pnpm test` 237 passing.
 
-## Wave 2 — Ready (not yet launched)
-- #112 Diff review call via Anthropic SDK — unblocked (#111 done)
-- #114 diff-reviews data-access layer — unblocked (#110 done)
+## Wave 2 — Complete (finished 2026-05-22)
+- #112 Diff review call via Anthropic SDK + mocked tests — ✅ done
+- #114 diff-reviews data-access layer + file-reference integrity check — ✅ done
+
+Verification: `pnpm typecheck` 4/4, `pnpm test` 277 passing, `pnpm lint` clean.
+Commits `394d61a` (#114), `67fde32` (#112) pushed to `origin/epic/diff-review`.
 
 ## Queued
-- #113 Understanding-check grading call — waits on #112
-- #116 Integrate Diff Review UI — waits on #112, #113, #114 (#115 done)
+- #113 Understanding-check grading call — unblocked (#112 done); consumes the
+  `ComprehensionQuestion` shape from #112, persists via `gradeDiffReview` (#114)
+- #116 Integrate Diff Review UI — waits on #113 (#112, #114, #115 done)
 
 ## Completed
 - #110, #111, #115 — Wave 1
+- #112, #114 — Wave 2
 
 ## Notes
 - Migration numbered `0005` — collision with the project-logic-mapper epic's

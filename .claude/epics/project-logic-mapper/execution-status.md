@@ -10,16 +10,20 @@ Worktree: `../epic-project-logic-mapper/` (branch `epic/project-logic-mapper`)
 
 Verification: `pnpm typecheck` 4/4, `pnpm test` 245 passing.
 
-## Wave 2 — Ready (not yet launched)
-- #104 LangChain RAG layer — unblocked (#101 done)
-- #106 project-maps data-access layer — unblocked (#102 done)
+## Wave 2 — Complete (finished 2026-05-22)
+- #104 LangChain RAG layer — ✅ done
+- #106 project-maps data-access layer + integrity check — ✅ done
+
+Verification: `pnpm typecheck` 4/4, `pnpm test` (ai 37, db 264) passing, `pnpm lint` clean.
+Commits `ec441f8` (#104), `e193ec2` (#106) pushed to `origin/epic/project-logic-mapper`.
 
 ## Queued
-- #105 LangGraph mapping pipeline — waits on #104 (#101, #103 done)
-- #108 Integrate Project Logic Mapper UI — waits on #105, #106 (#107 done)
+- #105 LangGraph mapping pipeline — unblocked (#101, #103, #104 done)
+- #108 Integrate Project Logic Mapper UI — waits on #105 (#106, #107 done)
 
 ## Completed
 - #101, #102, #103, #107 — Wave 1
+- #104, #106 — Wave 2
 
 ## Notes
 - #101's files landed inside commit `e4b00e8` (labeled `Issue #107:`) due to a
