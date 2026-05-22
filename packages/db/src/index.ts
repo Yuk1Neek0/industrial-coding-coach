@@ -1,5 +1,6 @@
 export * from "./catalog"
 export * from "./client"
+export * from "./diff"
 export * from "./github"
 export * from "./recommendation-narrative"
 export * from "./recommendation-scoring"
