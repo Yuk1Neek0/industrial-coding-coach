@@ -23,13 +23,20 @@ Commits `ec441f8` (#104), `e193ec2` (#106) pushed to `origin/epic/project-logic-
 Verification: `pnpm typecheck` 4/4, `pnpm test` 331 passing, `pnpm lint` clean.
 Commit `2ead337` pushed to `origin/epic/project-logic-mapper`.
 
-## Queued
-- #108 Integrate Project Logic Mapper UI — unblocked (#105, #106, #107 done)
+## Wave 4 — Complete (finished 2026-05-22)
+- #108 Integrate Project Logic Mapper UI + Mermaid rendering — ✅ done
+
+Verification (no API key): `pnpm lint` 4/4, `pnpm typecheck` 4/4, `pnpm build` 1/1,
+`pnpm test` (db 264, ai, web 6 new) passing. Commits pushed to
+`origin/epic/project-logic-mapper` (`2ead337..68fd2da`). `mermaid@^11.15.0` added.
+
+## Epic complete — all 8 tasks done. Ready for epic PR → CI → human review → merge.
 
 ## Completed
 - #101, #102, #103, #107 — Wave 1
 - #104, #106 — Wave 2
 - #105 — Wave 3
+- #108 — Wave 4
 
 ## Flagged for human review
 - #105's agentic nodes use a plain-text JSON-output model seam instead of the

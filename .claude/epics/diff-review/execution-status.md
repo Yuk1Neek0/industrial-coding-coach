@@ -22,13 +22,19 @@ Commits `394d61a` (#114), `67fde32` (#112) pushed to `origin/epic/diff-review`.
 Verification: `pnpm typecheck` 4/4, `pnpm test` 295 passing, `pnpm lint` clean.
 Commit `1499f60` pushed to `origin/epic/diff-review`.
 
-## Queued
-- #116 Integrate Diff Review UI — unblocked (#112, #113, #114, #115 done)
+## Wave 4 — Complete (finished 2026-05-22)
+- #116 Integrate the Diff Review UI — ✅ done
+
+Verification (no API key): `pnpm lint` 4/4, `pnpm typecheck` 4/4, `pnpm build` OK,
+`pnpm test` 295/295 passing. Commit `f2d2fea` pushed to `origin/epic/diff-review`.
+
+## Epic complete — all 7 tasks done. Ready for epic PR → CI → human review → merge.
 
 ## Completed
 - #110, #111, #115 — Wave 1
 - #112, #114 — Wave 2
 - #113 — Wave 3
+- #116 — Wave 4
 
 ## Notes
 - Migration numbered `0005` — collision with the project-logic-mapper epic's
