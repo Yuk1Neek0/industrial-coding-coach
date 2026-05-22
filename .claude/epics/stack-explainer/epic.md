@@ -1,9 +1,9 @@
 ---
 name: stack-explainer
-status: backlog
+status: in-progress
 created: 2026-05-22T00:20:11Z
-updated: 2026-05-22T00:24:36Z
-progress: 0%
+updated: 2026-05-22T02:09:31Z
+progress: 83%
 prd: .claude/prds/stack-explainer.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/83
 ---
@@ -121,12 +121,12 @@ Medium — 6 tasks. Critical path: task 2 → task 3 (explanation call) → task
 once `llm-foundation` lands.
 
 ## Tasks Created
-- [ ] #84 - stack_explanations schema + migration (parallel: true)
-- [ ] #85 - Stack detection module + tests (parallel: true)
-- [ ] #86 - Stack explanation via Anthropic SDK + mocked tests (parallel: true)
-- [ ] #87 - Stack-explanations data-access layer + file-reference integrity check (parallel: true)
-- [ ] #88 - Stack Explainer page specs + Claude Design prompts (parallel: true)
-- [ ] #89 - Integrate the Stack Explainer UI (parallel: false)
+- [x] #84 - stack_explanations schema + migration (parallel: true)
+- [x] #85 - Stack detection module + tests (parallel: true)
+- [x] #86 - Stack explanation via Anthropic SDK + mocked tests (parallel: true)
+- [x] #87 - Stack-explanations data-access layer + file-reference integrity check (parallel: true)
+- [x] #88 - Stack Explainer page specs + Claude Design prompts (parallel: true)
+- [ ] #89 - Integrate the Stack Explainer UI (parallel: false) — blocked: awaits Claude Design drafts
 
 Total tasks: 6
 Parallel tasks: 5 (001, 002, 005 — from start; 003 — after 002; 004 — after 001)

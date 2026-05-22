@@ -14,4 +14,5 @@ those plans.
 | M1 — Product Reframing | [`M1-product-reframing.md`](M1-product-reframing.md) | ✅ Complete |
 | M2 — Golden Path Catalog | [`M2-golden-path-catalog.md`](M2-golden-path-catalog.md) | ✅ Complete |
 | M3 — Template Registry | [`M3-template-registry.md`](M3-template-registry.md) | ✅ Complete |
+| M5 — Stack Decision Explainer | [`M5-stack-decision-explainer.md`](M5-stack-decision-explainer.md) | 🚧 In progress |
 | M11 — GitHub Integration | [`M11-github-integration.md`](M11-github-integration.md) | ✅ Complete |
