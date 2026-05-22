@@ -98,3 +98,48 @@ Complete — **PR #93** passed CI, was reviewed, and merged to `main`; the epic
 is closed and archived to `.claude/epics/archived/recommendation-engine/`.
 Exercising a generated narrative needs `ANTHROPIC_API_KEY` set locally; without
 it the deterministic recommendation is still produced and saved.
+
+## Retrospective
+
+**What went well**
+
+- The hybrid split held under test: scoring is a pure function with a
+  determinism test (identical input → identical ranking, ties broken by slug),
+  and the LLM only writes prose — it is structurally unable to change the
+  decision. The referential-integrity test makes a recommendation citing a
+  non-existent slug a test failure, not a runtime surprise.
+- The nullable-`narrative` design paid off: a failed bounded LLM call still
+  yields a saved recommendation, so CI and any no-API-key environment work with
+  zero special-casing. The result page treats a missing narrative as a
+  recoverable state, not an error.
+- Reusing the M2/M3 design system and the established per-feature page pattern
+  (`layout` / `page` / `_components` / scoped CSS) made the recommendation UI
+  visually one product with the rest of the app at low cost.
+
+**What to watch — lessons**
+
+- **Cross-epic migration collision — again.** M4 and M5 ran in parallel
+  worktrees and both added a Drizzle `0003` migration; M4 (second to merge)
+  regenerated its migration as `0004` via `drizzle-kit generate`. This is the
+  exact M3/M11 lesson, recurred. It is now a *known tax*, not a surprise —
+  parallel epics that both add a `packages/db` migration should either
+  serialize the migration-adding task or budget for the regenerate-on-merge.
+- **Narrative-module placement diverged across epics.** M4 put the narrative
+  call in `packages/db` and derived the Anthropic tool/content types from the
+  `@workspace/ai` surface (no second SDK path); M5 added `@anthropic-ai/sdk`
+  directly to `packages/db`. Two epics answered the same question two ways,
+  independently. **Lesson:** a cross-cutting convention — where LLM-call modules
+  live, and whether they may import the SDK directly — should be pinned once (an
+  ADR note), not re-decided per epic.
+- CCPM task titles still said "v0" though ADR 0007 mandates Claude Design — the
+  same ADR-vs-task-title drift M3 flagged. Cosmetic, still unfixed.
+- The page spec floated editing templates in the result view; the Claude Design
+  draft narrowed edit mode to path + narrative, and #82 followed the design —
+  a small spec-vs-design drift, resolved in the design's favour.
+
+**Follow-ups**
+
+- App-wide nav is inconsistent: each feature carries its own `chrome.tsx`, some
+  with dead links. The `/recommend` entry was added to this feature's nav only;
+  a unifying pass across all features is unscoped.
+- M6 (Project Logic Mapper) is next per the milestone plan.
