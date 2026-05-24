@@ -138,9 +138,12 @@ export function parseCcpmTaskFile(content: string, taskRef: string): CcpmTask {
     }
   }
 
-  // Body: everything after the closing `---`, with a leading newline stripped.
+  // Body: everything after the closing `---`, with leading and trailing
+  // blank lines stripped so the body round-trips through the schema as
+  // "the markdown the user wrote" (no stray newlines from the file's
+  // trailing-newline convention).
   const body = lines.slice(frontmatterEnd + 1).join("\n")
-  result.body = body.replace(/^\n+/, "")
+  result.body = body.replace(/^\n+/, "").replace(/\n+$/, "")
   return result
 }
 
