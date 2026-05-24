@@ -4,7 +4,7 @@ status: backlog
 created: 2026-05-24T19:36:42Z
 progress: 0%
 prd: .claude/prds/issue-based-learning-workspace.md
-github: (will be set on sync)
+github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/130
 ---
 
 # Epic: issue-based-learning-workspace
@@ -273,14 +273,14 @@ LangChain install on M6's critical path has no analogue here since both
 bounded SDK calls reuse the shipped `llm-foundation` client).
 
 ## Tasks Created
-- [ ] 001.md - learning_units schema + Drizzle migration (parallel: true)
-- [ ] 002.md - Issue fetching + CCPM-task adapter + normalized input (parallel: true)
-- [ ] 003.md - Generation SDK call + integrity check + mocked tests (parallel: false)
-- [ ] 004.md - Understanding-check grading call + mocked tests (parallel: false)
-- [ ] 005.md - learning_units data-access layer + integrity check (parallel: false)
-- [ ] 006.md - Four-UI Page Specs + Claude Design prompts (parallel: true)
-- [ ] 007.md - Per-repo Issues list Page Spec + prompt (parallel: true)
-- [ ] 008.md - Integrate M7 UI into apps/web (parallel: false)
+- [ ] 131.md - learning_units schema + Drizzle migration (parallel: true)
+- [ ] 132.md - Issue fetching + CCPM-task adapter + normalized input (parallel: true)
+- [ ] 133.md - Generation SDK call + integrity check + mocked tests (parallel: false)
+- [ ] 134.md - Understanding-check grading call + mocked tests (parallel: false)
+- [ ] 135.md - learning_units data-access layer + integrity check (parallel: false)
+- [ ] 136.md - Four-UI Page Specs + Claude Design prompts (parallel: true)
+- [ ] 137.md - Per-repo Issues list Page Spec + prompt (parallel: true)
+- [ ] 138.md - Integrate M7 UI into apps/web (parallel: false)
 
 Total tasks: 8
 Parallel tasks: 4
