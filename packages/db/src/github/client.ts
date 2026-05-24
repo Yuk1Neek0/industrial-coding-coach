@@ -122,12 +122,17 @@ export interface PullRequestFileApiResponse {
 }
 
 /** GitHub's REST shape for one entry of `GET .../issues/{number}/timeline`. */
-interface TimelineEventApiResponse {
+export interface TimelineEventApiResponse {
   event: string
   source?: {
     type?: string
     issue?: { number: number; pull_request?: unknown }
   }
+}
+
+/** A label entry on a GitHub issue. */
+export interface IssueLabelApiResponse {
+  name: string
 }
 
 /** GitHub's REST shape for `GET /repos/{owner}/{repo}/issues/{number}`. */
@@ -137,6 +142,12 @@ export interface IssueApiResponse {
   body: string | null
   state: string
   html_url: string
+  /**
+   * Labels attached to the issue. GitHub returns `{ name, color, ... }` objects;
+   * only `name` is consumed by the M7 issue-fetch surface (Issue #132). Older
+   * responses sometimes return plain strings — both shapes are accepted.
+   */
+  labels?: (IssueLabelApiResponse | string)[]
   /** Present only when the issue is itself a pull request. */
   pull_request?: unknown
 }
@@ -373,15 +384,41 @@ export interface GitHubClient {
     prNumber: number,
     prBody?: string | null,
   ): Promise<GitHubResult<number | null>>
-  /** Fetch a single issue's metadata (title, body, state). */
+  /** Fetch a single issue's metadata (title, body, state, labels). */
   getIssue(
     ref: RepoRef,
     issueNumber: number,
   ): Promise<GitHubResult<IssueApiResponse>>
+  /**
+   * List a repository's issues, paginated. GitHub's `/issues` endpoint mixes
+   * issues and pull requests in one feed — pull requests carry a `pull_request`
+   * key; the client returns the raw page entries and the caller filters them
+   * (the M7 issue-fetch surface does, Issue #132).
+   *
+   * @param maxIssues - hard cap on issues fetched across pages so a very large
+   *   repository cannot run the client unbounded (ADR 0009 §2).
+   */
+  listIssues(
+    ref: RepoRef,
+    options?: { state?: "open" | "closed" | "all"; maxIssues?: number },
+  ): Promise<GitHubResult<{ issues: IssueApiResponse[]; truncated: boolean }>>
+  /**
+   * Fetch an issue's timeline events. The M7 issue-fetch surface reads
+   * `cross-referenced` / `connected` events whose source is itself a PR to
+   * discover the PRs linked to an issue (Issue #132), the dual of
+   * `getLinkedIssueNumber`'s PR → issue walk.
+   */
+  getIssueTimeline(
+    ref: RepoRef,
+    issueNumber: number,
+  ): Promise<GitHubResult<TimelineEventApiResponse[]>>
 }
 
 /** Default page size for the PR files endpoint (GitHub's max is 100). */
 const PR_FILES_PAGE_SIZE = 100
+
+/** Default page size for the issues list endpoint (GitHub's max is 100). */
+const ISSUES_PAGE_SIZE = 100
 
 /**
  * Default cap on the number of changed files fetched for one PR. A PR larger
@@ -389,6 +426,13 @@ const PR_FILES_PAGE_SIZE = 100
  * model stays bounded for a very large PR (ADR 0009 §2).
  */
 export const DEFAULT_MAX_PR_FILES = 300
+
+/**
+ * Default cap on the number of issues fetched for one repository. A repo with
+ * more issues than this is fetched up to the cap and flagged `truncated`, so
+ * the issues list stays bounded against the rate limit (ADR 0009 §2).
+ */
+export const DEFAULT_MAX_ISSUES = 300
 
 /**
  * GitHub keywords that, followed by `#N` (or `owner/repo#N`), link a PR to an
@@ -693,6 +737,47 @@ export function createGitHubClient(
         )}/issues/${encodeURIComponent(String(issueNumber))}`,
         `fetching issue #${issueNumber} of ${ref.owner}/${ref.repo}`,
       )
+    },
+
+    async getIssueTimeline(ref, issueNumber) {
+      return getJson<TimelineEventApiResponse[]>(
+        `/repos/${encodeURIComponent(ref.owner)}/${encodeURIComponent(
+          ref.repo,
+        )}/issues/${encodeURIComponent(
+          String(issueNumber),
+        )}/timeline?per_page=${PR_FILES_PAGE_SIZE}`,
+        `fetching the timeline of issue #${issueNumber} of ` +
+          `${ref.owner}/${ref.repo}`,
+      )
+    },
+
+    async listIssues(ref, options = {}) {
+      const state = options.state ?? "all"
+      const cap = Math.max(0, options.maxIssues ?? DEFAULT_MAX_ISSUES)
+      const collected: IssueApiResponse[] = []
+      let page = 1
+      // Walk pages until we hit the cap, a short (final) page, or an empty
+      // page — same bounded-pagination shape as `getPullRequestFiles`.
+      for (;;) {
+        const result = await getJson<IssueApiResponse[]>(
+          `/repos/${encodeURIComponent(ref.owner)}/${encodeURIComponent(
+            ref.repo,
+          )}/issues?state=${encodeURIComponent(
+            state,
+          )}&per_page=${ISSUES_PAGE_SIZE}&page=${page}`,
+          `listing issues of ${ref.owner}/${ref.repo}`,
+        )
+        if (!result.ok) return result
+        const pageIssues = result.data
+        collected.push(...pageIssues)
+        const lastPage = pageIssues.length < ISSUES_PAGE_SIZE
+        if (collected.length >= cap) {
+          const truncated = collected.length > cap || !lastPage
+          return ok({ issues: collected.slice(0, cap), truncated })
+        }
+        if (lastPage) return ok({ issues: collected, truncated: false })
+        page += 1
+      }
     },
   }
 }
