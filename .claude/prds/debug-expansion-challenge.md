@@ -3,6 +3,7 @@ name: debug-expansion-challenge
 description: M9 — bounded Anthropic SDK calls generate project-tied debug/extension challenges from the M6 project map (add a field, trace a failed call, fix a schema mismatch, add a loading/error state, add a unit test, explain a broken CI result, extend one module safely); the user submits an answer, M9 grades it and records whether understanding was demonstrated; challenges and attempts persist to SQLite.
 status: backlog
 created: 2026-05-24T17:54:31Z
+updated: 2026-05-24T19:08:14Z
 ---
 
 # PRD: debug-expansion-challenge
@@ -128,34 +129,52 @@ project needs in order to be honestly defensible in an interview.
   M9 challenge-type set), a plain-language task description, target
   files/modules resolved to real snapshot paths, an explicit "in-scope vs
   out-of-scope" boundary, and acceptance criteria for the grader. The call
-  uses tool use to read specific files where needed.
+  uses tool use to read specific files where needed. **Generation is lazy,
+  per challenge type, on first open of that category** — generated
+  challenges are cached per snapshot in `challenges` so subsequent opens
+  do not re-call the SDK. The user can request a regenerated challenge of
+  the same type via an explicit "new challenge" action.
 - **FR-2 — Challenge-type coverage.** The system supports the M9 challenge
   types: *add a small field*, *trace a failed API call*, *fix a schema
   mismatch*, *add a loading/error state*, *add a unit test*, *explain a
-  broken CI result*, *extend one module safely*. Where a type does not
-  apply to a given repository (e.g., broken CI with no CI configured), it
-  is skipped, not faked.
+  broken CI result*, *extend one module safely*. **The "explain a broken
+  CI result" type is gated on the snapshot exposing a real failing CI run
+  or log** — if none is available, the type is omitted, not synthesized
+  from a CI config file. Surfacing real CI runs may be deferred (M11
+  follow-up); until then this type is expected to be absent on most repos.
+  Where any other type does not apply to a given repository, it is
+  skipped, not faked.
 - **FR-3 — Challenge model.** A typed model of a challenge captures: type,
   task description, in-scope file/module set, out-of-scope file/module set,
   acceptance criteria, source references into the M6 project map, and an
-  identifier keyed to the imported-repo snapshot.
+  identifier keyed to the imported-repo snapshot. **Both the in-scope and
+  out-of-scope sets are strictly limited to files / modules that the M6
+  project map explicitly names** — the generator may not infer adjacent
+  files (test files, type files, index files). The integrity check
+  (FR-6) rejects any reference outside the M6 map.
 - **FR-4 — Submission model.** A typed model of a user attempt captures:
   the user's free-text explanation, optional per-file code snippets, the
   file paths the user said they would change, and a timestamp.
 - **FR-5 — Grading call.** A second bounded Anthropic SDK call grades a
   user's submission against the challenge's acceptance criteria and against
-  the M6 project map. Output is structured: a pass/fail-style outcome,
-  per-criterion results, weak-area tags, and a short feedback paragraph.
-  Grading is reproducible and tested with mocked/recorded SDK responses.
+  the M6 project map. Output is structured: **a 0–100 numeric score plus a
+  weak-area breakdown, mirroring M8's grading shape**, with per-criterion
+  results and a short feedback paragraph. The pass threshold and
+  weak-area schema match M8's so the two milestones produce one
+  comprehension-grading pattern across the product. Grading is
+  reproducible and tested with mocked/recorded SDK responses.
 - **FR-6 — Project-tied grading output.** Every grading point that names a
   file or module references a real path in the snapshot, validated by an
   integrity check; the grader does not invent files or fabricate code
   references the user never made.
-- **FR-7 — No execution.** M9 does **not** run, build, lint, or test the
-  user's code; it does not autograde arbitrary code. Grading is over the
-  user's *explanation* of what they would change and (optionally) small
-  illustrative snippets, judged against the challenge's expected scope and
-  the project map.
+- **FR-7 — No execution; explanation-only grading.** M9 does **not** run,
+  build, lint, or test the user's code; it does not autograde arbitrary
+  code. **Grading is over the user's explanation only** — which files
+  they say they'd change and why, judged against the challenge's expected
+  scope and the M6 project map. Optional snippets are illustrative
+  context for the user; the grader does not score snippet content for
+  style, naming, or plausibility. This boundary is normative — widening
+  it requires a new ADR.
 - **FR-8 — Persistence.** New tables — `challenges` and
   `challenge_attempts` — added via Drizzle migrations to the existing
   SQLite database (ADR 0006), keyed by snapshot (`owner/repo` + ref) and
@@ -168,6 +187,11 @@ project needs in order to be honestly defensible in an interview.
   Detail Page, a Debug Walkthrough UI, and a Completion Review UI — each
   preceded by a Page Spec under `docs/design/` and a prompt under
   `docs/design/ui-prompts/` before any Claude Design generation (ADR 0007).
+  **Every new page in M9 goes through the Claude Design round-trip**;
+  v0 is **not** used. The Challenge Detail Page shows the most-recent
+  attempt as the primary outcome and renders prior attempts inline
+  (collapsible) so the user can self-review their progression on a
+  challenge.
 - **FR-11 — Integration with the imported repo.** M9 consumes the M11
   snapshot (file tree, key files) and the M6 project map (architecture
   overview, key-file map, request/data flow, debug path) through their
@@ -280,6 +304,12 @@ project needs in order to be honestly defensible in an interview.
   this milestone — challenges are generated from the repo's structure;
   scheduling / progression is closer to M10's learning-memory scope and is
   not in M9.
+- **No synthesized "broken CI" challenges.** If the snapshot does not
+  expose a real failing CI run or log, the broken-CI type is omitted, not
+  fabricated from a CI config file.
+- **No M9-side M10 surface.** M9 stores per-attempt outcomes and stops;
+  any cross-attempt / cross-repo rollup or exportable artifact is M10's
+  PRD to decide and own.
 
 ## Dependencies
 
@@ -298,53 +328,55 @@ project needs in order to be honestly defensible in an interview.
 - **Human review** — approval of this PRD is required before the M9 epic
   is parsed.
 
-## Open Questions for Human Review
+## Resolved Decisions (2026-05-24)
 
-These are decisions M9 needs before the epic is parsed; they were not
-resolvable from existing context (CLAUDE.md, product.md, the milestone
-plan, ADR 0005, the M6 and M8 PRDs, or the M8 epic). Surfaced rather than
-invented:
+The PRD review pass with the human reviewer resolved every previously open
+question. Decisions are normative; the FR / NFR / Constraints / Out of
+Scope sections above have been updated to reflect them.
 
-1. **Challenge volume per repo.** The plan lists seven challenge types as
-   examples. Is the M9 expectation "at least one challenge per applicable
-   type per repo" (current PRD assumption) or a smaller curated set
-   chosen by the user? Affects the Challenge List Page UX and grading
-   load.
-2. **Generation trigger.** Are challenges generated automatically when a
-   user opens the M9 page for a repo (one-shot batch), generated lazily
-   per type when the user opens a category, or explicitly user-triggered
-   ("give me a new challenge")? Affects FR-1 wiring and SDK call cost
-   shape.
-3. **Code-snippet handling in submissions.** US-3 lets the user include
-   optional small snippets. Is grading allowed to comment on *snippet
-   content* (style, naming, plausibility) as long as it does not claim
-   the code runs, or strictly only on *which files the user said they
-   would change and why*? FR-7 is conservative; this could be widened.
-4. **Pass/fail semantics.** US-4 says "pass/fail-style outcome." Should
-   that be a hard pass/fail boolean, a 0-100 score with a pass threshold
-   (like M8's grading), or a tri-state (pass / partial / fail)? Affects
-   schema and Completion Review UI.
-5. **Retry policy and history surfacing.** US-6 keeps full attempt
-   history but surfaces "the latest outcome" as current status. Should
-   the Challenge Detail Page also display the user's previous attempt(s)
-   for self-review, or hide them to discourage simple copying? Affects
-   the Detail Page spec.
-6. **Cross-project state for "explain a broken CI result".** This
-   challenge type assumes the user's repo has a CI configuration. If
-   the snapshot doesn't include CI runs or logs, the challenge would be
-   generated from the config alone (no real failing run). Is that
-   acceptable, or should the type be gated on having M11 surface real
-   CI status? Affects FR-2.
-7. **Relationship to M10 portfolio artifacts.** M9 records "the user
-   demonstrated understanding." M10 turns project understanding into
-   exportable artifacts. Should M9 expose its passed-challenge set as
-   structured input M10 can read, or is that integration deferred to
-   M10's own PRD? Current PRD treats the integration as M10's job (Out
-   of Scope here); confirm.
-8. **Source of truth for "in-scope vs out-of-scope" files.** FR-3 says
-   each challenge declares in-scope and out-of-scope file sets. Is the
-   generator permitted to widen the in-scope set beyond what the M6 map
-   explicitly names (e.g., infer adjacent test files), or strictly
-   limited to map-named files? Affects the generation prompt and the
-   integrity check.
+- **R1 — Challenge volume per repo (was Q1).** At least one challenge per
+  applicable type per repo. Types that do not apply to the repo are
+  skipped (FR-2); this is not a curated-by-user subset.
+  *Captured in FR-1, FR-2, Success Criteria.*
+
+- **R2 — Generation trigger (was Q2).** Generation is **lazy, per
+  challenge type, on first open of that category**, cached per snapshot
+  in `challenges`. A "new challenge" action lets the user request a
+  regenerated challenge of the same type.
+  *Captured in FR-1.*
+
+- **R3 — Snippet handling (was Q3).** Grading is over the user's
+  **explanation only**; optional snippets are illustrative context for
+  the user and are **not graded** for style, naming, or plausibility.
+  Widening this boundary requires a new ADR.
+  *Captured in FR-7.*
+
+- **R4 — Outcome shape (was Q4).** Outcome is a **0–100 numeric score
+  plus a weak-area breakdown, matching M8's grading shape**. The pass
+  threshold and weak-area schema are shared with M8.
+  *Captured in FR-5.*
+
+- **R5 — Attempt history surfacing (was Q5).** The Challenge Detail Page
+  shows the most-recent attempt as primary and prior attempts inline
+  (collapsible) for self-review.
+  *Captured in FR-10.*
+
+- **R6 — Broken-CI challenge (was Q6).** The "explain a broken CI
+  result" type is gated on the snapshot exposing a real failing CI run
+  or log. **It is not synthesized from a CI config file.** Until M11
+  surfaces real CI runs, this type is expected to be absent on most
+  repos.
+  *Captured in FR-2, Out of Scope.*
+
+- **R7 — Relationship to M10 (was Q7).** M9 ships per-attempt
+  persistence and stops. **The M10 integration (whether M10 reads M9's
+  tables directly or M9 emits a rollup) is deferred to M10's PRD.** M9
+  does not pre-allocate that surface.
+  *Captured in Out of Scope.*
+
+- **R8 — In/out-of-scope file source (was Q8).** Both in-scope and
+  out-of-scope file sets are **strictly limited to M6 project-map-named
+  files**. The generator may not infer adjacent files; the integrity
+  check rejects any reference outside the M6 map.
+  *Captured in FR-3, FR-6.*
 
