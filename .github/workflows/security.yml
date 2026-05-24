@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    # See note in ci.yml — task PRs targeting epic/* branches need the same
+    # security gate as main-targeted PRs.
+    branches: [main, "epic/**"]
   schedule:
     - cron: "0 6 * * 1"
 

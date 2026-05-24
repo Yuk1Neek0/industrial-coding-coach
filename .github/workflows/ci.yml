@@ -4,7 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    # Trigger on PRs into main AND into any epic/* branch.
+    # Task-level PRs target the parent epic branch (ADR 0008); without the
+    # epic/** glob those PRs would merge with zero CI verification.
+    branches: [main, "epic/**"]
 
 concurrency:
   group: ci-${{ github.ref }}
