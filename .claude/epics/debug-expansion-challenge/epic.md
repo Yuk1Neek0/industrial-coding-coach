@@ -4,7 +4,7 @@ status: backlog
 created: 2026-05-24T19:37:17Z
 progress: 0%
 prd: .claude/prds/debug-expansion-challenge.md
-github: (will be set on sync)
+github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/139
 ---
 
 # Epic: debug-expansion-challenge
@@ -250,15 +250,15 @@ step.)
   `epic/debug-expansion-challenge`.
 
 ## Tasks Created
-- [ ] 001.md - challenges + challenge_attempts schema + data-access layer (parallel: true)
-- [ ] 002.md - File-reference integrity check + tests (parallel: true)
-- [ ] 003.md - Generation SDK call + mocked tests (parallel: false)
-- [ ] 004.md - Grading SDK call + mocked tests (parallel: false)
-- [ ] 005.md - Challenge List Page Spec + Claude Design prompt (parallel: true)
-- [ ] 006.md - Challenge Detail Page Spec + Claude Design prompt (parallel: true)
-- [ ] 007.md - Debug Walkthrough UI Page Spec + Claude Design prompt (parallel: true)
-- [ ] 008.md - Completion Review UI Page Spec + Claude Design prompt (parallel: true)
-- [ ] 009.md - Integrate M9 UI into apps/web (parallel: false)
+- [ ] 140.md - challenges + challenge_attempts schema + data-access layer (parallel: true)
+- [ ] 141.md - File-reference integrity check + tests (parallel: true)
+- [ ] 142.md - Generation SDK call + mocked tests (parallel: false)
+- [ ] 143.md - Grading SDK call + mocked tests (parallel: false)
+- [ ] 144.md - Challenge List Page Spec + Claude Design prompt (parallel: true)
+- [ ] 145.md - Challenge Detail Page Spec + Claude Design prompt (parallel: true)
+- [ ] 146.md - Debug Walkthrough UI Page Spec + Claude Design prompt (parallel: true)
+- [ ] 147.md - Completion Review UI Page Spec + Claude Design prompt (parallel: true)
+- [ ] 148.md - Integrate M9 UI into apps/web (parallel: false)
 
 Total tasks: 9
 Parallel tasks: 6
