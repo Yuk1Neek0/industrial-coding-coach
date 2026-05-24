@@ -1,0 +1,104 @@
+# =============================================================================
+# Copier Foundation Template
+# -----------------------------------------------------------------------------
+# Regenerates the workflow-filesystem foundation overlay (docs/ + .github/ +
+# .env.example) originally created manually for Industrial Coding Coach.
+#
+# Source ADR : docs/decisions/0002-workflow-filesystem.md
+# Copier docs: https://copier.readthedocs.io/en/stable/configuring/
+#              https://copier.readthedocs.io/en/stable/creating/
+#
+# Authored against the stable Copier docs (>= 9.x conventions). All `_`-prefixed
+# settings below come from those docs, not from memory.
+# =============================================================================
+
+# --- Copier settings ---------------------------------------------------------
+
+# Require a reasonably modern Copier so `_templates_suffix: .jinja` and
+# `_subdirectory` behave as documented in the stable docs.
+_min_copier_version: "9.0.0"
+
+# Template source lives under template/ so this file (copier.yml) and the
+# template README are not themselves rendered into the generated project.
+# See: https://copier.readthedocs.io/en/stable/configuring/ ("_subdirectory")
+_subdirectory: template
+
+# Files ending in .jinja are rendered; the .jinja suffix is stripped on output
+# (e.g. README.md.jinja -> README.md). All other files are copied verbatim.
+# See: https://copier.readthedocs.io/en/stable/creating/ ("Jinja file suffix")
+_templates_suffix: .jinja
+
+# Be strict about undefined variables so typos surface during generation
+# instead of writing literal `{{ typo }}` into output files.
+_envops:
+  keep_trailing_newline: true
+
+# Record answers so `copier update` can refresh the overlay non-destructively.
+_answers_file: .copier-answers.yml
+
+# --- Questions ---------------------------------------------------------------
+
+project_name:
+  type: str
+  help: >-
+    Human-readable project name (used in docs headings and prose).
+    Example: "Acme Project Coach".
+  default: My Project
+  validator: >-
+    {% if not project_name or project_name | length < 2 %}
+    project_name must be at least 2 characters.
+    {% endif %}
+
+project_slug:
+  type: str
+  help: >-
+    Machine-friendly slug used in filenames and CLI snippets. Lowercase,
+    digits, and dashes only; must start with a letter.
+    Example: "acme-project-coach".
+  default: "{{ project_name | lower | replace(' ', '-') | replace('_', '-') }}"
+  validator: >-
+    {% if not (project_slug | regex_search('^[a-z][a-z0-9\-]*$')) %}
+    project_slug must start with a letter and contain only lowercase letters,
+    digits, and dashes.
+    {% endif %}
+
+description:
+  type: str
+  help: >-
+    One-sentence description of the project. Appears in the generated docs
+    README and PR template guidance.
+  default: A new project bootstrapped from the foundation overlay.
+
+license:
+  type: str
+  help: SPDX identifier for the project's license.
+  default: MIT
+  choices:
+    - MIT
+    - Apache-2.0
+    - BSD-3-Clause
+    - GPL-3.0
+    - MPL-2.0
+    - Unlicense
+    - Proprietary
+
+github_owner:
+  type: str
+  help: >-
+    GitHub user or organization that will host the repository. Used in
+    contact links and issue-template references.
+  default: your-org
+  validator: >-
+    {% if not (github_owner | regex_search('^[A-Za-z0-9][A-Za-z0-9\-]*$')) %}
+    github_owner must be a valid GitHub login (letters, digits, dashes).
+    {% endif %}
+
+github_repo:
+  type: str
+  help: >-
+    GitHub repository name. Used in contact links and issue templates.
+  default: "{{ project_slug }}"
+  validator: >-
+    {% if not (github_repo | regex_search('^[A-Za-z0-9_.\-]+$')) %}
+    github_repo must be a valid GitHub repository name.
+    {% endif %}

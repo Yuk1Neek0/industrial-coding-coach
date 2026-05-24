@@ -1,6 +1,6 @@
 # ADR 0002 — Workflow Filesystem
 
-- **Status:** Accepted
+- **Status:** Accepted — implementation tracked in `tools/copier-foundation/` (added 2026-05-24)
 - **Date:** 2026-05-20
 
 ## Context
@@ -31,3 +31,14 @@ docs/design/{v0-prompts,v0-integration-notes}/
   reproduces this structure, so future projects generate it consistently. Until
   then, agents must not invent an alternative structure — extend this one.
 - `.gitkeep` files keep otherwise-empty folders under version control.
+
+### Follow-up resolution (2026-05-24)
+
+The Copier foundation template now lives at `tools/copier-foundation/` and
+reproduces this structure for new projects. See
+[`tools/copier-foundation/README.md`](../../tools/copier-foundation/README.md)
+for usage and the one documented rename (`design/v0-prompts/` and
+`design/v0-integration-notes/` → `design/ui-prompts/` and
+`design/ui-integration-notes/`, reflecting ADR 0007's switch from v0 to
+Claude Design). The ADR's example block above is the original sketch and is
+preserved as historical context.
