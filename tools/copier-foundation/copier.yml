@@ -28,8 +28,10 @@ _subdirectory: template
 # See: https://copier.readthedocs.io/en/stable/creating/ ("Jinja file suffix")
 _templates_suffix: .jinja
 
-# Be strict about undefined variables so typos surface during generation
-# instead of writing literal `{{ typo }}` into output files.
+# Preserve the trailing newline of each templated file so rendered output
+# matches the source layout (the Jinja default would strip it, breaking POSIX
+# text-file convention). See: https://copier.readthedocs.io/en/stable/configuring/
+# ("_envops").
 _envops:
   keep_trailing_newline: true
 

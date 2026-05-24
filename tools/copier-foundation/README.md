@@ -107,12 +107,23 @@ This template is authoring-only in this PR; no Copier install is performed
 here. To verify after Copier is installed locally:
 
 ```bash
+# 1. Render the template into a clean directory.
 copier copy tools/copier-foundation /tmp/test-foundation
-diff -r --brief \
-  /tmp/test-foundation/docs \
-  docs \
-  | grep -v -E '\.copier-answers\.yml|specs/|design/(?!ui-prompts|ui-integration-notes|\.gitkeep)|milestones/|decisions/000[2-9]|decisions/README\.md'
+
+# 2. Confirm the expected folder layout was generated.
+find /tmp/test-foundation/docs -type d | sort
+find /tmp/test-foundation/.github -type f | sort
+test -f /tmp/test-foundation/.env.example
+test -f /tmp/test-foundation/.copier-answers.yml
+
+# 3. Eyeball the templated files for any unsubstituted `{{ ... }}` markers.
+grep -RE '\{\{|\{%' /tmp/test-foundation && echo "Unrendered Jinja found" || echo "OK"
 ```
 
-The diff should show only intentional differences (project-specific ADRs and
-specs that this repo has accumulated, which the template does not ship).
+Expected layout: `current/`, `milestones/`, `specs/`, `design/` (with
+`ui-prompts/` and `ui-integration-notes/`), `decisions/`, `testing/`,
+`review/`, `retrospectives/`, `archive/` under `docs/`; `ISSUE_TEMPLATE/`
+plus `PULL_REQUEST_TEMPLATE.md` under `.github/`; a top-level `.env.example`;
+and a `.copier-answers.yml`. The generated project will contain only the
+starter ADR 0001 — project-specific ADRs and specs come later, not from the
+template.
