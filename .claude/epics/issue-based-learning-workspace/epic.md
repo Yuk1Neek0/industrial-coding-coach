@@ -161,16 +161,17 @@ draft → Claude Code integration notes under `docs/design/ui-integration-notes/
 
 ## Implementation Strategy
 
-Wave 1: schema migration + data-access layer + issue-fetch extension to the
-M11 GitHub client start in parallel — they share no files. Wave 2: the
-generation call and the grading call land independently in parallel, both
-mocked. Wave 3: the five Page Specs (workspace page, checklist, questions,
-challenge panel, per-repo issues list) are written and Claude Design prompts
-drafted in parallel — each task ends at "Page Spec written + prompt
-drafted", deferring the canvas round-trip. Wave 4: a single integration task
-wires `apps/web` routes to the generation call, the grading call, the
-data-access layer, and the issue-fetch client. Mirrors the
-Wave 1..Wave 4 shape used by M6 / M8 and ADR 0008.
+Wave 1 (parallel): the schema migration (task 1), the issue-fetch extension
+to the M11 GitHub client (task 2), and the five Page Specs + Claude Design
+prompts (tasks 6, 7) all start immediately — they share no files. Wave 2:
+the data-access layer + integrity check (task 5) lands once the schema is
+in (blocked by task 1), and the generation call (task 3) lands once the
+issue-fetch shape is in (blocked by task 2) — both Wave 2 tasks run in
+parallel. Wave 3: the grading call (task 4) follows the generation call.
+Wave 4: a single integration task (task 8) wires `apps/web` routes to the
+generation call, the grading call, the data-access layer, and the
+issue-fetch client. Mirrors the Wave 1..Wave 4 shape used by M6 / M8 and
+ADR 0008.
 
 ## Task Breakdown Preview
 
