@@ -3,6 +3,7 @@ name: issue-based-learning-workspace
 description: M7 — turns each GitHub Issue / CCPM task on the user's imported repo into a learning unit (issue goal, related files, concepts, AI-agent execution notes, review checklist, understanding questions, debug/expand challenge stub) via bounded Anthropic SDK calls; units persist to SQLite.
 status: backlog
 created: 2026-05-24T17:54:09Z
+updated: 2026-05-24T19:06:22Z
 ---
 
 # PRD: issue-based-learning-workspace
@@ -124,7 +125,10 @@ here.
   GitHub client, reusing its authentication and rate-limit handling
   (ADR 0009); no second GitHub access path. CCPM task files
   (`.claude/epics/<epic>/<task>.md`) are accepted as an equivalent local
-  input shape where the imported repo carries them.
+  input shape where the imported repo carries them. **Both inputs are
+  normalized into a single learning-unit input shape**: the unit and its UI
+  do not differentiate by source, the source (`github-issue` |
+  `ccpm-task`) is metadata only.
 
 - **FR-2 — Learning-unit model.** A typed model of the learning unit:
   issue/task reference, restated goal, related-files list (with M6 role
@@ -151,21 +155,27 @@ here.
 - **FR-6 — Review-checklist state.** The user can mark review-checklist
   items as done / not done for a given unit; state is persisted and
   retrievable. This is the surface that operationalizes "review AI work
-  instead of passively accepting it."
+  instead of passively accepting it." **The checklist surfaces progress
+  but does not gate access to the understanding-question score** —
+  product.md's "comprehension over completion" principle wins over
+  checkbox-theater enforcement. The Issue Learning Workspace UI shows
+  checklist completion as a progress indicator only.
 
 - **FR-7 — Challenge stub.** The unit displays a stub for the
   debug/expand challenge and explicitly defers full implementation to M9.
   The stub includes the challenge concept (e.g., "add a field", "trace a
   failed call") tied to the issue but does not run, grade, or claim to
-  resolve a challenge. The data model leaves room for M9 to attach the real
-  challenge later without a schema rewrite.
+  resolve a challenge. **M7 ships only minimal stub fields**
+  (`challenge_concept`, `challenge_type`) on the learning unit; M9 will add
+  its full challenge schema in its own migration when M9 lands. M7 does
+  not pre-allocate M9 fields.
 
-- **FR-8 — Persistence.** A `learning_units` table — and any companion
-  table needed for user answers, scores, and checklist state — added via
+- **FR-8 — Persistence.** A single `learning_units` table, added via
   Drizzle migrations to the existing SQLite database (ADR 0006), keyed by
-  repo + issue/task identifier. Structured/list-valued fields stored as
-  JSON columns, mirroring `project_maps` / `diff_reviews` conventions. No
-  new database.
+  repo + issue/task identifier. **User answers, the per-attempt score,
+  weak-area breakdown, and checklist state all live as JSON columns on
+  `learning_units`** — no companion tables — mirroring `project_maps`
+  (M6) and `diff_reviews` (M8). No new database.
 
 - **FR-9 — Data-access layer.** A typed module to create, read, and
   update learning units, the user's answers / scores, and checklist state
@@ -175,8 +185,16 @@ here.
   Review Checklist UI, an Understanding Questions UI, and a Challenge Panel
   (showing the stub) — each preceded by a Page Spec under `docs/design/`
   and a prompt under `docs/design/ui-prompts/` before any Claude Design
-  generation (ADR 0007). v0 is **not** used for M7 UI work — per ADR 0007
-  Claude Design replaces v0 across the project.
+  generation (ADR 0007). **Every new page in M7 goes through the Claude
+  Design round-trip**; v0 is **not** used — per ADR 0007 Claude Design
+  replaces v0 across the project.
+
+- **FR-11 — Entry point / IA.** The user reaches a learning unit through
+  a **per-repo issue list off the M11 imported-repo page**: imported repo
+  → "Issues" tab → issue row → learning-unit page. No global cross-repo
+  issues index in M7 (a global index, if ever needed, is a follow-up).
+  This page is also produced through the Claude Design round-trip
+  (ADR 0007) with a Page Spec in `docs/design/`.
 
 ## Non-Functional Requirements
 
@@ -210,6 +228,10 @@ here.
   the unit, not the whole snapshot. The call is bounded per ADR 0005 and
   reuses the M8 cost-shape (single review-style call + single grading
   call).
+
+- **Strictly per-unit scoring.** Scores and weak-area breakdowns live on
+  the unit; M7 ships no aggregate "comprehension score for this repo"
+  view. M10 owns any cross-unit rollup.
 
 ## Success Criteria
 
@@ -269,6 +291,10 @@ here.
   the challenge is M9. M7 ships only the challenge *stub*.
 - Long-term, spaced-repetition learning memory over scores — that is
   closer to M10 Learning Memory & Portfolio Export.
+- **Cross-unit score rollup** ("comprehension score for this repo") — owned
+  by M10; M7 ships strictly per-unit scoring.
+- **Global cross-repo issues index** — M7 surfaces issues only per imported
+  repo. A global index is a follow-up if ever needed.
 - Writing to GitHub (creating, editing, closing issues / commenting / opening
   PRs) — read-only per ADR 0009.
 - Executing or modifying the analyzed project's code.
@@ -297,45 +323,42 @@ here.
   conventions.
 - Human approval of this PRD before the epic is parsed.
 
-## Open Questions for Human Review
+## Resolved Decisions (2026-05-24)
 
-- **Q1 — CCPM-task input shape.** FR-1 accepts both a GitHub Issue and a
-  CCPM task file (`.claude/epics/<epic>/<task>.md`) as input. Should M7
-  treat these as a single normalized input (the unit doesn't care which it
-  came from) or as two distinct flows with separate UI affordances? The
-  milestone plan says "GitHub Issue / CCPM task" without distinguishing.
+The PRD review pass with the human reviewer resolved every previously open
+question. Decisions are normative; the FR / NFR / Constraints sections above
+have been updated to reflect them.
 
-- **Q2 — Companion table vs JSON columns.** User answers, scores, and
-  checklist state could live in a single JSON column on `learning_units` or
-  in companion tables (`learning_unit_answers`, `learning_unit_checklist`).
-  M8's `diff_reviews` chose JSON; M6's `project_maps` chose JSON. M7 has
-  more user-mutable state than either. Default to JSON for consistency, or
-  introduce companion tables now? This is a design call that wants human
-  sign-off before the epic.
+- **R1 — Input shape (was Q1).** GitHub Issues and CCPM tasks are
+  normalized into a single learning-unit input shape. The unit and its UI
+  do not differentiate by source; the source is metadata only.
+  *Captured in FR-1.*
 
-- **Q3 — Challenge stub data shape.** FR-7 says the data model should
-  leave room for M9 to attach the real challenge without a schema rewrite.
-  Should M7 ship the M9 challenge schema fields as nullable now (forward
-  compatibility) or ship only the stub fields and let M9 add columns? The
-  M9 PRD does not yet exist; this question may need to defer until M9
-  scoping begins.
+- **R2 — User state persistence (was Q2).** User answers, scores, and
+  checklist state live as **JSON columns on `learning_units`** — no
+  companion tables. Matches M6 `project_maps` and M8 `diff_reviews`
+  conventions; cheaper to evolve.
+  *Captured in FR-8.*
 
-- **Q4 — Review-checklist completion gating.** Should marking the review
-  checklist as fully complete be required before the user can see the
-  understanding-question score? The milestone acceptance ("review AI work
-  instead of passively accepting it") suggests yes; the product PRD's
-  "comprehension over completion" suggests no — the user should not be
-  blocked by checkbox theater. Default: no gating; surface progress but
-  do not block. Confirm.
+- **R3 — Challenge stub schema (was Q3).** M7 ships **minimal stub
+  fields only** (`challenge_concept`, `challenge_type`). M9 will add its
+  full challenge schema in its own migration. M7 does not pre-allocate M9
+  fields; the full M9 shape is M9's PRD to decide.
+  *Captured in FR-7.*
 
-- **Q5 — Issue selection UX.** Where in the app does the user *land* on a
-  learning unit? From the M11 imported-repo page, from a global "issues"
-  index, or from a per-repo issue list? This is a page-spec / IA question
-  that should be settled before the Claude Design round-trip starts, but
-  it is downstream of this PRD.
+- **R4 — Checklist gating (was Q4).** The review checklist surfaces
+  progress; it does **not** gate the understanding-question score.
+  product.md's "comprehension over completion" wins over checkbox
+  enforcement.
+  *Captured in FR-6.*
 
-- **Q6 — Grading parity with M8.** M8's grading produces a numeric score
-  and weak-area breakdown. M7 reuses that pattern. Should the two scores
-  feed a single per-repo "comprehension" rollup (a small piece of M10
-  scaffolding), or stay strictly per-unit until M10 ships? Default: strictly
-  per-unit; M10 owns the rollup.
+- **R5 — Entry-point IA (was Q5).** The user lands on a learning unit
+  from a **per-repo issue list off the M11 imported-repo page** — no
+  global cross-repo issues index in M7. A global index, if ever needed,
+  is a follow-up.
+  *Captured in FR-11.*
+
+- **R6 — Score rollup (was Q6).** M7 stores scores strictly per-unit on
+  `learning_units`. **M10 owns any cross-unit / per-repo rollup**; M7
+  ships no rollup scaffolding.
+  *Captured in NFR "Strictly per-unit scoring" below and Out of Scope.*
