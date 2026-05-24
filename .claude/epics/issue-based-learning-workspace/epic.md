@@ -271,3 +271,18 @@ task 4 (grading call) → task 8 (integration). Runs as a single worktree
 epic; expected calendar shape comparable to M8's seven-task epic (the
 LangChain install on M6's critical path has no analogue here since both
 bounded SDK calls reuse the shipped `llm-foundation` client).
+
+## Tasks Created
+- [ ] 001.md - learning_units schema + Drizzle migration (parallel: true)
+- [ ] 002.md - Issue fetching + CCPM-task adapter + normalized input (parallel: true)
+- [ ] 003.md - Generation SDK call + integrity check + mocked tests (parallel: false)
+- [ ] 004.md - Understanding-check grading call + mocked tests (parallel: false)
+- [ ] 005.md - learning_units data-access layer + integrity check (parallel: false)
+- [ ] 006.md - Four-UI Page Specs + Claude Design prompts (parallel: true)
+- [ ] 007.md - Per-repo Issues list Page Spec + prompt (parallel: true)
+- [ ] 008.md - Integrate M7 UI into apps/web (parallel: false)
+
+Total tasks: 8
+Parallel tasks: 4
+Sequential tasks: 4
+Estimated total effort: 87 hours
