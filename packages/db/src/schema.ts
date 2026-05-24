@@ -709,3 +709,178 @@ export type DiffReview = typeof diffReviews.$inferSelect
 
 /** The shape required to insert a diff review. */
 export type NewDiffReview = typeof diffReviews.$inferInsert
+
+// ---------------------------------------------------------------------------
+// Learning units — M7 Issue-Based Learning Workspace output
+// (issue-based-learning-workspace PRD).
+//
+// One row per learning unit, keyed by repo identity (a `repo_snapshots` child)
+// plus the issue/task identifier and the input source (`github-issue` or
+// `ccpm-task`, per R1). A row holds the seven generated parts of the unit
+// (restated goal, related files, concepts, agent execution notes, review
+// checklist, understanding questions, and a minimal challenge stub per R3),
+// the user's answers to the understanding questions, the per-attempt score
+// with a weak-area breakdown, and the review-checklist state — all on the
+// single row as JSON columns (R2, FR-8). Joins the same local SQLite store
+// (ADR 0006) — a new table, not a new database. Mirrors `project_maps` (M6)
+// and `diff_reviews` (M8): JSON text columns for list-valued and
+// user-mutable fields; nullable columns are filled when the user submits
+// answers or ticks checklist items. No companion tables (R2). M9 will add
+// its full challenge schema in its own migration — M7 pre-allocates nothing
+// for M9 beyond the two stub columns (R3).
+// ---------------------------------------------------------------------------
+
+/** A file related to the learning unit, with the role it plays. */
+export interface RelatedFile {
+  /** Path within the snapshot, e.g. `apps/web/app/page.tsx`. */
+  path: string
+  /** Why this file is relevant to the issue / task. */
+  reason: string
+}
+
+/** A concept the unit teaches, with its grounding in the project. */
+export interface LearningConcept {
+  /** The concept name, e.g. `server actions`. */
+  name: string
+  /** Plain-language explanation of the concept in this project's terms. */
+  explanation: string
+}
+
+/** One step of the AI-agent execution notes — how the agent should approach the work. */
+export interface AgentExecutionStep {
+  /** One-based position of this step in the notes. */
+  order: number
+  /** What the agent should do at this step, in plain language. */
+  description: string
+}
+
+/** One item of the review checklist the user works through. */
+export interface ReviewChecklistItem {
+  /** Stable identifier of the item, used to key the user's checklist state. */
+  id: string
+  /** What the user should check, in plain language. */
+  description: string
+}
+
+/** An understanding question the user must answer to demonstrate comprehension. */
+export interface UnderstandingQuestion {
+  /** Stable identifier of the question, used to key the user's answer. */
+  id: string
+  /** The question text. */
+  prompt: string
+}
+
+/** The user's answer to one understanding question. */
+export interface UnderstandingAnswer {
+  /** The `UnderstandingQuestion.id` this answer responds to. */
+  questionId: string
+  /** The user's free-text answer. */
+  answer: string
+}
+
+/**
+ * The per-attempt score for the user's answers — overall and per question —
+ * shaped to match the M8 diff-review grading output (R6).
+ */
+export interface UnderstandingScore {
+  /** The overall score (0–100) for this attempt. */
+  overall: number
+  /** Per-question score breakdown. */
+  perQuestion: { questionId: string; score: number }[]
+}
+
+/** A weak area surfaced by grading, with how strongly it showed. */
+export interface LearningWeakArea {
+  /** The area of understanding that was weak, e.g. `data-flow`. */
+  area: string
+  /** Why this area was judged weak, in plain language. */
+  detail: string
+}
+
+/** The user's tick state for one checklist item. */
+export interface ChecklistItemState {
+  /** The `ReviewChecklistItem.id` this state corresponds to. */
+  itemId: string
+  /** Whether the user has ticked this item. */
+  checked: boolean
+}
+
+/**
+ * A learning unit produced by the M7 Issue-Based Learning Workspace for one
+ * GitHub Issue (or CCPM task) on an imported snapshot. The seven generated
+ * outputs are filled at generation time; `userAnswers`, `score`, `weakAreas`,
+ * and `checklistState` stay null until the user submits answers / ticks
+ * checklist items and the answers are graded.
+ */
+export const learningUnits = sqliteTable(
+  "learning_units",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    /** The imported repo snapshot this unit's repo identity is anchored to. */
+    snapshotId: integer("snapshot_id")
+      .notNull()
+      .references(() => repoSnapshots.id, { onDelete: "cascade" }),
+    /** Where this unit's input came from — GitHub Issue or CCPM task (R1). */
+    source: text("source", { enum: ["github-issue", "ccpm-task"] }).notNull(),
+    /** Issue or task identifier, e.g. `#42` or `epic/foo/003`. */
+    issueRef: text("issue_ref").notNull(),
+    /** The issue / task goal, restated in plain language. */
+    restatedGoal: text("restated_goal").notNull(),
+    /** Files in the snapshot related to the unit, with the role each plays. */
+    relatedFiles: text("related_files", { mode: "json" })
+      .$type<RelatedFile[]>()
+      .notNull(),
+    /** Concepts the unit teaches, grounded in the project. */
+    concepts: text("concepts", { mode: "json" })
+      .$type<LearningConcept[]>()
+      .notNull(),
+    /** AI-agent execution notes — how the agent should approach the work. */
+    agentExecutionNotes: text("agent_execution_notes", { mode: "json" })
+      .$type<AgentExecutionStep[]>()
+      .notNull(),
+    /** Review checklist the user works through (R4 — informational only). */
+    reviewChecklist: text("review_checklist", { mode: "json" })
+      .$type<ReviewChecklistItem[]>()
+      .notNull(),
+    /** Understanding questions the user must answer to demonstrate comprehension. */
+    questions: text("questions", { mode: "json" })
+      .$type<UnderstandingQuestion[]>()
+      .notNull(),
+    /** Minimal challenge concept stub — full schema lands in M9 (R3). */
+    challengeConcept: text("challenge_concept"),
+    /** Minimal challenge type stub — full schema lands in M9 (R3). */
+    challengeType: text("challenge_type"),
+    /** The user's answers; null until the understanding check is submitted. */
+    userAnswers: text("user_answers", { mode: "json" }).$type<
+      UnderstandingAnswer[]
+    >(),
+    /** The per-attempt score; null until the answers are graded (R6). */
+    score: text("score", { mode: "json" }).$type<UnderstandingScore>(),
+    /** Weak areas surfaced by grading; null until the answers are graded. */
+    weakAreas: text("weak_areas", { mode: "json" }).$type<LearningWeakArea[]>(),
+    /** The user's checklist tick state; null until the user ticks any item (R4). */
+    checklistState: text("checklist_state", { mode: "json" }).$type<
+      ChecklistItemState[]
+    >(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    /** One unit per snapshot + source + issue/task identifier; re-generating updates the row. */
+    uniqueIndex("learning_units_snapshot_source_issue_unique").on(
+      table.snapshotId,
+      table.source,
+      table.issueRef,
+    ),
+  ],
+)
+
+/** A learning unit as read from the database. */
+export type LearningUnit = typeof learningUnits.$inferSelect
+
+/** The shape required to insert a learning unit. */
+export type NewLearningUnit = typeof learningUnits.$inferInsert
