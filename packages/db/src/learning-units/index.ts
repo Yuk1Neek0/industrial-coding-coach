@@ -11,6 +11,9 @@
 //                 plus a DB-backed convenience wrapper.
 // - `generate`  — the bounded Anthropic SDK call that produces the typed
 //                 seven-part learning unit (FR-2 / FR-3 / FR-4 / FR-7, #133).
+// - `grade`     — the bounded Anthropic SDK call that grades the user's
+//                 answers into an `UnderstandingScore` and a
+//                 `LearningWeakArea` breakdown (FR-5, #134).
 
 export {
   createLearningUnit,
@@ -48,7 +51,24 @@ export {
   type GenerateLearningUnitResult,
 } from "./generate"
 
-// Re-export the typed question shape so the M7 grading call (#134) can
-// import it from a stable barrel — `questions[]` is the input contract for
-// grading (per the acceptance criteria).
-export type { UnderstandingQuestion } from "../schema"
+export {
+  gradeLearningUnit,
+  GradeLearningUnitError,
+  parseGradingContent,
+  type GradeLearningUnitData,
+  type GradeLearningUnitErrorKind,
+  type GradeLearningUnitInput,
+  type GradeLearningUnitResult,
+} from "./grade"
+
+// Re-export the typed question / answer / score / weak-area shapes from the
+// schema so callers can import the M7 grading contract from a stable barrel.
+// `questions[]` is the input contract for grading (per the acceptance
+// criteria); `UnderstandingScore` + `LearningWeakArea[]` is the output shape
+// (matches M8's `WeakArea` shape for the shared Score / Weak Area UI).
+export type {
+  LearningWeakArea,
+  UnderstandingAnswer,
+  UnderstandingQuestion,
+  UnderstandingScore,
+} from "../schema"
