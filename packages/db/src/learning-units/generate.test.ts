@@ -317,7 +317,7 @@ describe("generateLearningUnit", () => {
       ? userMsg.content[0]
       : undefined
     expect(block).toMatchObject({ type: "tool_result" })
-    expect(JSON.stringify(block)).toContain("content not snapshotted")
+    expect(JSON.stringify(block)).toContain("file not in snapshot")
   })
 
   it("serves a read_project_map_node request from the M6 map", async () => {
