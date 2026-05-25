@@ -9,7 +9,8 @@
     "./client": "./src/client.ts",
     "./github": "./src/github/index.ts",
     "./stack": "./src/stack/index.ts",
-    "./mapper": "./src/mapper/index.ts"
+    "./mapper": "./src/mapper/index.ts",
+    "./learning-units": "./src/learning-units/index.ts"
   },
   "scripts": {
     "lint": "eslint",
