@@ -53,3 +53,12 @@ export {
   generateInterviewQA,
   parseInterviewQAItems,
 } from "./generate-qa"
+
+export {
+  GenerateResumeBulletsError,
+  type GenerateResumeBulletsErrorKind,
+  type GenerateResumeBulletsOptions,
+  ResumeBulletsIntegrityError,
+  generateResumeBullets,
+  parseResumeBulletItems,
+} from "./generate-bullets"

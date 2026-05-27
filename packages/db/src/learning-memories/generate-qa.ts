@@ -34,30 +34,35 @@
 // Mirrors the M7 (`../learning-units/generate.ts`) + M8
 // (`../diff/review.ts`) + M9 (`../challenges/generation.ts`) bounded-SDK-call
 // shape so consumers learn one pattern across milestones.
+//
+// Shared scaffolding (the four read tools that target M5/M6/M7/M9, the
+// tool-result renderers, the small parsing helpers, the bundle loader) lives
+// in `./_sdk-shared.ts` so the résumé-bullet generator (#181) reuses one
+// copy. This module owns only the Q&A-specific bits: the system prompt, the
+// `submit_interview_qa` tool, the M8 diff-review read (Q&A only — bullets
+// don't ground in diff reviews), the submission parser, and the error
+// classes.
 
 import type Anthropic from "@anthropic-ai/sdk"
 import { createLlmClient, type LlmClient, type LlmError } from "@workspace/ai"
 
 import type { CatalogDb } from "../client"
-import {
-  getChallengeById,
-  listChallengeAttempts,
-  listChallengesBySnapshot,
-} from "../challenges/challenges"
 import { getDiffReview, listDiffReviews } from "../diff/reviews"
-import { listLearningUnits } from "../learning-units/units"
-import { getProjectMap } from "../mapper/project-maps"
-import type {
-  Challenge,
-  ChallengeAttempt,
-  DiffReview,
-  InterviewQA,
-  LearningUnit,
-  ProjectMap,
-  StackExplanation,
-} from "../schema"
-import { getStackExplanation } from "../stack/explanations"
+import type { DiffReview, InterviewQA } from "../schema"
 import { type IntegrityResult } from "./integrity"
+import {
+  READ_CHALLENGE_ATTEMPT_TOOL,
+  READ_LEARNING_UNIT_TOOL,
+  READ_PROJECT_MAP_ENTRY_TOOL,
+  READ_STACK_EXPLANATION_TOOL,
+  type SharedSourceBundle,
+  type ToolUseBlock,
+  loadSharedSourceBundle,
+  resolveSharedToolCall,
+  str,
+  strArray,
+  toolUseBlocks,
+} from "./_sdk-shared"
 
 /**
  * Hard cap on prompt → response round-trips. The model needs turns to read
@@ -164,62 +169,8 @@ export interface GenerateInterviewQAOptions {
 }
 
 // ---------------------------------------------------------------------------
-// Tool definitions
+// Q&A-specific tool definitions (the M8 diff-review read + the submit tool)
 // ---------------------------------------------------------------------------
-
-/** Tool the model calls to read the M5 stack explanation for the snapshot. */
-const READ_STACK_EXPLANATION_TOOL: Anthropic.Tool = {
-  name: "read_stack_explanation",
-  description:
-    "Read the M5 `stack_explanations` row for this snapshot: the named " +
-    "tools (with their project-specific purpose, alternatives, and " +
-    "job-relevance), the key files M5 surfaced, and the debug entry " +
-    "points. The technologies you may cite in `sourceReferences` are " +
-    "exactly the tool names listed here. Returns 'not available' when " +
-    "no stack explanation has been generated.",
-  input_schema: {
-    type: "object",
-    properties: {},
-  },
-}
-
-/** Tool the model calls to read the M6 project map for the snapshot. */
-const READ_PROJECT_MAP_ENTRY_TOOL: Anthropic.Tool = {
-  name: "read_project_map_entry",
-  description:
-    "Read the M6 `project_maps` row for this snapshot: the architecture " +
-    "overview, the key-file map (the ONLY file paths you may cite in " +
-    "`sourceReferences`), request/data flow, state flow, AI-call flow, and " +
-    "the debug path. Returns 'not available' when no project map exists.",
-  input_schema: {
-    type: "object",
-    properties: {},
-  },
-}
-
-/** Tool the model calls to list / read M7 learning units. */
-const READ_LEARNING_UNIT_TOOL: Anthropic.Tool = {
-  name: "read_learning_unit",
-  description:
-    "Read M7 `learning_units` for this snapshot. With no arguments, " +
-    "returns a compact list of every unit's `source`, `issueRef`, and " +
-    "restated goal. With `issueRef`, returns the full unit: restated " +
-    "goal, related files, concepts, agent execution notes, review " +
-    "checklist, understanding questions, and any user score / weak " +
-    "areas. Returns 'no learning units' when none have been generated.",
-  input_schema: {
-    type: "object",
-    properties: {
-      issueRef: {
-        type: "string",
-        description:
-          "Optional issue / task identifier (e.g. '#42' or " +
-          "'epic/foo/003') from a prior `read_learning_unit` listing call. " +
-          "Omit to list every unit.",
-      },
-    },
-  },
-}
 
 /** Tool the model calls to list / read M8 diff reviews. */
 const READ_DIFF_REVIEW_TOOL: Anthropic.Tool = {
@@ -239,31 +190,6 @@ const READ_DIFF_REVIEW_TOOL: Anthropic.Tool = {
         description:
           "Optional pull-request number from a prior `read_diff_review` " +
           "listing call. Omit to list every review.",
-      },
-    },
-  },
-}
-
-/** Tool the model calls to list / read M9 challenge attempts. */
-const READ_CHALLENGE_ATTEMPT_TOOL: Anthropic.Tool = {
-  name: "read_challenge_attempt",
-  description:
-    "Read M9 `challenges` + `challenge_attempts` for this snapshot. With " +
-    "no arguments, returns a compact list of every challenge's id, type, " +
-    "and one-line task description (only challenges that have been " +
-    "attempted at least once are listed). With `challengeId`, returns " +
-    "the full challenge plus its attempts: task description, in/out-of-" +
-    "scope files, acceptance criteria, source references, and each " +
-    "attempt's explanation excerpt + grading result. Returns 'no " +
-    "challenge attempts' when none exist.",
-  input_schema: {
-    type: "object",
-    properties: {
-      challengeId: {
-        type: "integer",
-        description:
-          "Optional challenge id from a prior `read_challenge_attempt` " +
-          "listing call. Omit to list every attempted challenge.",
       },
     },
   },
@@ -364,180 +290,8 @@ const SYSTEM_PROMPT =
   "  `submit_interview_qa` exactly once."
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Tool result renderers — Q&A-only (diff reviews)
 // ---------------------------------------------------------------------------
-
-/** A tool-use content block, narrowed from a response's content. */
-type ToolUseBlock = Extract<Anthropic.ContentBlock, { type: "tool_use" }>
-
-/** Collect the tool-use blocks from a response's content. */
-function toolUseBlocks(content: Anthropic.ContentBlock[]): ToolUseBlock[] {
-  return content.filter(
-    (block): block is ToolUseBlock => block.type === "tool_use",
-  )
-}
-
-/** A non-empty trimmed string, or `null`. */
-function str(value: unknown): string | null {
-  return typeof value === "string" && value.trim() !== "" ? value : null
-}
-
-/** A `string[]` of non-empty trimmed strings — anything else dropped. */
-function strArray(value: unknown): string[] {
-  if (!Array.isArray(value)) return []
-  return value.flatMap((raw) => {
-    const s = str(raw)
-    return s ? [s] : []
-  })
-}
-
-// ---------------------------------------------------------------------------
-// Tool result renderers
-// ---------------------------------------------------------------------------
-
-/**
- * Render the M5 stack explanation as a tool-result payload. When `null`, the
- * tool returns the "not available" sentinel that instructs the model to skip
- * the stack ground area.
- */
-function renderStackExplanation(stack: StackExplanation | null): string {
-  if (!stack) {
-    return (
-      "not available — no M5 stack explanation exists for this snapshot. " +
-      "Skip the 'stack' ground area rather than fabricating one."
-    )
-  }
-  const tools = stack.tools.length
-    ? stack.tools
-        .map((t) => {
-          const alts = t.alternatives
-            .map((a) => `${a.name} (${a.tradeOff})`)
-            .join("; ")
-          return (
-            `- ${t.name}: ${t.purpose}\n` +
-            `  alternatives: ${alts || "(none)"}\n` +
-            `  jobRelevance: ${t.jobRelevance}`
-          )
-        })
-        .join("\n")
-    : "(empty)"
-  const keyFiles = stack.keyFiles.length
-    ? stack.keyFiles.map((f) => `- ${f.path}: ${f.reason}`).join("\n")
-    : "(empty)"
-  const debug = stack.debugEntryPoints.length
-    ? stack.debugEntryPoints
-        .map((e) => `- ${e.location}: ${e.guidance}`)
-        .join("\n")
-    : "(empty)"
-  return (
-    `M5 stack explanation (tool names below are the AUTHORITATIVE stack set ` +
-    `you may cite — case-sensitive):\n\n` +
-    `## Tools\n${tools}\n\n` +
-    `## Key files\n${keyFiles}\n\n` +
-    `## Debug entry points\n${debug}`
-  )
-}
-
-/** Render the M6 project map as a tool-result payload. */
-function renderProjectMap(map: ProjectMap | null): string {
-  if (!map) {
-    return (
-      "not available — no M6 project map exists for this snapshot. Skip " +
-      "the 'architecture' ground area rather than fabricating one."
-    )
-  }
-  const keyFiles = map.keyFileMap.length
-    ? map.keyFileMap.map((f) => `- ${f.path}: ${f.role}`).join("\n")
-    : "(empty)"
-  const arch = map.architectureOverview.length
-    ? map.architectureOverview.map((s) => `- ${s.title}: ${s.detail}`).join("\n")
-    : "(empty)"
-  const reqFlow = map.requestDataFlow.length
-    ? map.requestDataFlow
-        .map(
-          (s) =>
-            `  ${s.order}. ${s.description}` + (s.path ? ` (${s.path})` : ""),
-        )
-        .join("\n")
-    : "(empty)"
-  const stateFlow = map.stateFlow.length
-    ? map.stateFlow
-        .map(
-          (s) =>
-            `  ${s.order}. ${s.description}` + (s.path ? ` (${s.path})` : ""),
-        )
-        .join("\n")
-    : "(empty)"
-  const aiFlow = map.aiCallFlow.length
-    ? map.aiCallFlow
-        .map(
-          (s) =>
-            `  ${s.order}. ${s.description}` + (s.path ? ` (${s.path})` : ""),
-        )
-        .join("\n")
-    : "(empty)"
-  const debug = map.debugPath.length
-    ? map.debugPath.map((s) => `- ${s.location}: ${s.guidance}`).join("\n")
-    : "(empty)"
-  return (
-    `M6 project map (key-file paths below are the AUTHORITATIVE file set ` +
-    `you may cite — case-sensitive):\n\n` +
-    `## Key files\n${keyFiles}\n\n` +
-    `## Architecture overview\n${arch}\n\n` +
-    `## Request / data flow\n${reqFlow}\n\n` +
-    `## State flow\n${stateFlow}\n\n` +
-    `## AI-call flow\n${aiFlow}\n\n` +
-    `## Debug path\n${debug}`
-  )
-}
-
-/** Render one M7 unit as a tool-result payload. */
-function renderLearningUnit(unit: LearningUnit): string {
-  const relatedFiles = unit.relatedFiles
-    .map((f) => `- ${f.path}: ${f.reason}`)
-    .join("\n")
-  const concepts = unit.concepts
-    .map((c) => `- ${c.name}: ${c.explanation}`)
-    .join("\n")
-  const checklist = unit.reviewChecklist
-    .map((c) => `- [${c.id}] ${c.description}`)
-    .join("\n")
-  const questions = unit.questions
-    .map((q) => `- [${q.id}] ${q.prompt}`)
-    .join("\n")
-  const score = unit.score ? `${unit.score.overall}/100` : "(ungraded)"
-  const weakAreas = unit.weakAreas?.length
-    ? unit.weakAreas.map((w) => `- ${w.area}: ${w.detail}`).join("\n")
-    : "(none)"
-  return (
-    `Learning unit (${unit.source} ${unit.issueRef}):\n` +
-    `## Restated goal\n${unit.restatedGoal}\n\n` +
-    `## Related files\n${relatedFiles || "(none)"}\n\n` +
-    `## Concepts\n${concepts || "(none)"}\n\n` +
-    `## Review checklist\n${checklist || "(none)"}\n\n` +
-    `## Understanding questions\n${questions || "(none)"}\n\n` +
-    `## Score\n${score}\n\n` +
-    `## Weak areas\n${weakAreas}`
-  )
-}
-
-/** Render the M7 learning-unit list (compact). */
-function renderLearningUnitList(units: LearningUnit[]): string {
-  if (units.length === 0) {
-    return (
-      "no learning units — no M7 `learning_units` rows exist for this " +
-      "snapshot. Skip the 'issue-learning' ground area rather than " +
-      "fabricating one."
-    )
-  }
-  return (
-    `${units.length} learning unit(s):\n` +
-    units
-      .map((u) => `- ${u.source} ${u.issueRef}: ${u.restatedGoal.slice(0, 80)}`)
-      .join("\n") +
-    `\n\nCall read_learning_unit again with issueRef to fetch the full unit.`
-  )
-}
 
 /** Render one M8 diff review as a tool-result payload. */
 function renderDiffReview(review: DiffReview): string {
@@ -589,78 +343,6 @@ function renderDiffReviewList(reviews: DiffReview[]): string {
   )
 }
 
-/** Render one M9 challenge + its attempts as a tool-result payload. */
-function renderChallengeWithAttempts(
-  challenge: Challenge,
-  attempts: ChallengeAttempt[],
-): string {
-  const inScope = challenge.inScopeFiles.map((p) => `- ${p}`).join("\n")
-  const outScope = challenge.outOfScopeFiles.map((p) => `- ${p}`).join("\n")
-  const criteria = challenge.acceptanceCriteria
-    .map((c) => `- [${c.id}] ${c.detail}`)
-    .join("\n")
-  const sourceRefs = challenge.sourceReferences
-    .map((r) => `- ${r.section} / ${r.path}: ${r.note}`)
-    .join("\n")
-  const attemptsBlock = attempts.length
-    ? attempts
-        .map((a, i) => {
-          const grading = a.grading
-            ? `score ${a.grading.score}/100; weak: ${
-                a.grading.weakAreas.map((w) => w.area).join(", ") || "(none)"
-              }`
-            : "(ungraded)"
-          return (
-            `### Attempt ${i + 1}\n` +
-            `${a.explanation.slice(0, 400)}\n\n` +
-            `Grading: ${grading}`
-          )
-        })
-        .join("\n\n")
-    : "(no attempts on this challenge)"
-  return (
-    `Challenge id=${challenge.id} (${challenge.type}):\n` +
-    `## Task\n${challenge.taskDescription}\n\n` +
-    `## In-scope files\n${inScope || "(none)"}\n\n` +
-    `## Out-of-scope files\n${outScope || "(none)"}\n\n` +
-    `## Acceptance criteria\n${criteria || "(none)"}\n\n` +
-    `## Source references\n${sourceRefs || "(none)"}\n\n` +
-    `## Attempts\n${attemptsBlock}`
-  )
-}
-
-/**
- * Render the M9 challenge list (compact). Only challenges with at least one
- * attempt are listed — the 'debug-expansion' ground area is grounded in the
- * user's *attempts*, not in the merely-generated challenges. The PRD's
- * skip-when-empty rule fires when zero attempts exist for the snapshot.
- */
-function renderChallengeAttemptList(
-  challenges: { challenge: Challenge; attempts: ChallengeAttempt[] }[],
-): string {
-  const withAttempts = challenges.filter((c) => c.attempts.length > 0)
-  if (withAttempts.length === 0) {
-    return (
-      "no challenge attempts — no `challenge_attempts` rows exist for this " +
-      "snapshot. Skip the 'debug-expansion' ground area rather than " +
-      "fabricating one."
-    )
-  }
-  return (
-    `${withAttempts.length} attempted challenge(s):\n` +
-    withAttempts
-      .map(
-        ({ challenge, attempts }) =>
-          `- id=${challenge.id} (${challenge.type}, ${attempts.length} ` +
-          `attempt${attempts.length === 1 ? "" : "s"}): ` +
-          `${challenge.taskDescription.slice(0, 80)}`,
-      )
-      .join("\n") +
-    `\n\nCall read_challenge_attempt again with challengeId to fetch the ` +
-    `full challenge + attempts.`
-  )
-}
-
 // ---------------------------------------------------------------------------
 // Submission parsing
 // ---------------------------------------------------------------------------
@@ -702,47 +384,26 @@ export function parseInterviewQAItems(input: unknown): InterviewQA[] | null {
 }
 
 // ---------------------------------------------------------------------------
-// Source bundle — read the five ground-area rows once, up front
+// Q&A source bundle — extends the shared bundle with M8 diff reviews
 // ---------------------------------------------------------------------------
 
-interface SourceBundle {
-  stack: StackExplanation | null
-  projectMap: ProjectMap | null
-  learningUnits: LearningUnit[]
+interface QASourceBundle extends SharedSourceBundle {
   diffReviews: DiffReview[]
-  /** Every snapshot challenge paired with its attempts (newest-first by id). */
-  challengesWithAttempts: { challenge: Challenge; attempts: ChallengeAttempt[] }[]
 }
 
-async function loadSourceBundle(
+async function loadQASourceBundle(
   snapshotId: number,
   db?: CatalogDb,
-): Promise<SourceBundle> {
-  const [stack, projectMap, learningUnits, diffReviews, allChallenges] =
-    await Promise.all([
-      getStackExplanation(snapshotId, db),
-      getProjectMap(snapshotId, db),
-      listLearningUnits(snapshotId, db),
-      listDiffReviews(snapshotId, db),
-      listChallengesBySnapshot(snapshotId, db),
-    ])
-  const challengesWithAttempts = await Promise.all(
-    allChallenges.map(async (challenge) => ({
-      challenge,
-      attempts: await listChallengeAttempts(challenge.id, db),
-    })),
-  )
-  return {
-    stack,
-    projectMap,
-    learningUnits,
-    diffReviews,
-    challengesWithAttempts,
-  }
+): Promise<QASourceBundle> {
+  const [shared, diffReviews] = await Promise.all([
+    loadSharedSourceBundle(snapshotId, db),
+    listDiffReviews(snapshotId, db),
+  ])
+  return { ...shared, diffReviews }
 }
 
 /** Build the initial user prompt: a brief inventory of available source rows. */
-function buildInitialPrompt(bundle: SourceBundle): string {
+function buildInitialPrompt(bundle: QASourceBundle): string {
   const stackBlock = bundle.stack
     ? `Available (${bundle.stack.tools.length} tool(s) explained).`
     : "Not available — skip 'stack'."
@@ -784,62 +445,41 @@ function buildInitialPrompt(bundle: SourceBundle): string {
 }
 
 // ---------------------------------------------------------------------------
-// Tool result dispatch
+// Tool result dispatch — Q&A-specific (delegates to shared for the 4 reads)
 // ---------------------------------------------------------------------------
+
+const LEARNING_UNIT_EMPTY_SENTINEL =
+  "no learning units — no M7 `learning_units` rows exist for this " +
+  "snapshot. Skip the 'issue-learning' ground area rather than " +
+  "fabricating one."
+
+const CHALLENGE_ATTEMPT_EMPTY_SENTINEL =
+  "no challenge attempts — no `challenge_attempts` rows exist for this " +
+  "snapshot. Skip the 'debug-expansion' ground area rather than " +
+  "fabricating one."
 
 async function resolveToolCall(
   block: ToolUseBlock,
   snapshotId: number,
-  bundle: SourceBundle,
+  bundle: QASourceBundle,
   db?: CatalogDb,
 ): Promise<Anthropic.ToolResultBlockParam> {
-  const input = (block.input ?? {}) as Record<string, unknown>
-
-  if (block.name === READ_STACK_EXPLANATION_TOOL.name) {
-    return {
-      type: "tool_result",
-      tool_use_id: block.id,
-      content: renderStackExplanation(bundle.stack),
-    }
-  }
-
-  if (block.name === READ_PROJECT_MAP_ENTRY_TOOL.name) {
-    return {
-      type: "tool_result",
-      tool_use_id: block.id,
-      content: renderProjectMap(bundle.projectMap),
-    }
-  }
-
-  if (block.name === READ_LEARNING_UNIT_TOOL.name) {
-    const issueRef = str(input.issueRef)
-    if (!issueRef) {
-      return {
-        type: "tool_result",
-        tool_use_id: block.id,
-        content: renderLearningUnitList(bundle.learningUnits),
-      }
-    }
-    const unit = bundle.learningUnits.find((u) => u.issueRef === issueRef)
-    if (!unit) {
-      return {
-        type: "tool_result",
-        tool_use_id: block.id,
-        is_error: true,
-        content:
-          `No learning unit with issueRef "${issueRef}". Call ` +
-          `read_learning_unit with no arguments to list the available ` +
-          `unit refs.`,
-      }
-    }
-    return {
-      type: "tool_result",
-      tool_use_id: block.id,
-      content: renderLearningUnit(unit),
-    }
-  }
+  // Try the shared four-tool dispatcher first; if it returns null, the tool
+  // is Q&A-specific (read_diff_review) or unknown.
+  const shared = await resolveSharedToolCall(
+    block,
+    snapshotId,
+    bundle,
+    {
+      learningUnitEmpty: LEARNING_UNIT_EMPTY_SENTINEL,
+      challengeAttemptEmpty: CHALLENGE_ATTEMPT_EMPTY_SENTINEL,
+    },
+    db,
+  )
+  if (shared) return shared
 
   if (block.name === READ_DIFF_REVIEW_TOOL.name) {
+    const input = (block.input ?? {}) as Record<string, unknown>
     const pullNumber =
       typeof input.pullNumber === "number" && Number.isInteger(input.pullNumber)
         ? input.pullNumber
@@ -868,48 +508,6 @@ async function resolveToolCall(
       type: "tool_result",
       tool_use_id: block.id,
       content: renderDiffReview(review),
-    }
-  }
-
-  if (block.name === READ_CHALLENGE_ATTEMPT_TOOL.name) {
-    const challengeId =
-      typeof input.challengeId === "number" &&
-      Number.isInteger(input.challengeId)
-        ? input.challengeId
-        : null
-    if (challengeId === null) {
-      return {
-        type: "tool_result",
-        tool_use_id: block.id,
-        content: renderChallengeAttemptList(bundle.challengesWithAttempts),
-      }
-    }
-    let row = bundle.challengesWithAttempts.find(
-      (c) => c.challenge.id === challengeId,
-    )
-    if (!row) {
-      // Fall back to a fresh DB lookup in case the caller passed a stale id.
-      const challenge = await getChallengeById(challengeId, db)
-      if (challenge && challenge.snapshotId === snapshotId) {
-        const attempts = await listChallengeAttempts(challenge.id, db)
-        row = { challenge, attempts }
-      }
-    }
-    if (!row) {
-      return {
-        type: "tool_result",
-        tool_use_id: block.id,
-        is_error: true,
-        content:
-          `No challenge with id ${challengeId} on this snapshot. Call ` +
-          `read_challenge_attempt with no arguments to list the available ` +
-          `challenge ids (only those with at least one attempt are listed).`,
-      }
-    }
-    return {
-      type: "tool_result",
-      tool_use_id: block.id,
-      content: renderChallengeWithAttempts(row.challenge, row.attempts),
     }
   }
 
@@ -953,7 +551,7 @@ export async function generateInterviewQA(
   options?: GenerateInterviewQAOptions,
 ): Promise<InterviewQA[]> {
   const db = options?.db
-  const bundle = await loadSourceBundle(snapshotId, db)
+  const bundle = await loadQASourceBundle(snapshotId, db)
 
   const client = options?.client ?? createLlmClient()
   const messages: Anthropic.MessageParam[] = [
