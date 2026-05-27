@@ -17,5 +17,7 @@ those plans.
 | M4 — Recommendation Engine | [`M4-recommendation-engine.md`](M4-recommendation-engine.md) | ✅ Complete |
 | M5 — Stack Decision Explainer | [`M5-stack-decision-explainer.md`](M5-stack-decision-explainer.md) | ✅ Complete |
 | M6 — Project Logic Mapper | [`M6-project-logic-mapper.md`](M6-project-logic-mapper.md) | ✅ Complete |
+| M7 — Issue-Based Learning Workspace | [`M7-issue-based-learning-workspace.md`](M7-issue-based-learning-workspace.md) | ✅ Complete |
 | M8 — Diff Review and Understanding Check | [`M8-diff-review.md`](M8-diff-review.md) | ✅ Complete |
+| M9 — Debug and Expansion Challenge System | [`M9-debug-expansion-challenge.md`](M9-debug-expansion-challenge.md) | ✅ Complete |
 | M11 — GitHub Integration | [`M11-github-integration.md`](M11-github-integration.md) | ✅ Complete |
