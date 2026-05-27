@@ -37,6 +37,7 @@
     "@anthropic-ai/sdk": "^0.99.0",
     "@workspace/ai": "workspace:*",
     "better-sqlite3": "^12.10.0",
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "^0.45.2",
+    "fflate": "^0.8.3"
   }
 }
