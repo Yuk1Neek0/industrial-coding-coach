@@ -38,3 +38,9 @@ export {
   type IntegrityArtifactQA,
   type IntegrityResult,
 } from "./integrity"
+
+export {
+  composeArchitectureExplanation,
+  composeDebugStories,
+  composeLearningMemoryTree,
+} from "./compose"
