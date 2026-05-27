@@ -7,16 +7,19 @@
 export {
   createGitHubClient,
   parseRepoUrl,
+  DEFAULT_MAX_ISSUES,
   DEFAULT_MAX_PR_FILES,
   type FileContent,
   type GitHubClient,
   type GitHubClientOptions,
   type IssueApiResponse,
+  type IssueLabelApiResponse,
   type PullRequestApiResponse,
   type PullRequestFileApiResponse,
   type RepoMetadata,
   type RepoRef,
   type RepoTree,
+  type TimelineEventApiResponse,
   type TreeEntry,
 } from "./client"
 
@@ -68,3 +71,24 @@ export {
   getRepoFile,
   type ImportRepositoryInput,
 } from "./repos"
+
+export {
+  fetchIssue,
+  listIssues,
+  normalizeIssueToLearningUnitInput,
+  type IssueModel,
+  type IssueState,
+  type LearningUnitInput,
+  type ListIssuesOptions,
+  type ListIssuesResult,
+} from "./issues"
+
+export {
+  fetchCcpmTask,
+  listCcpmTasks,
+  normalizeCcpmTaskToLearningUnitInput,
+  parseCcpmTaskFile,
+  type CcpmReadOptions,
+  type CcpmTask,
+  type CcpmTaskFrontmatter,
+} from "./ccpm-task-adapter"
