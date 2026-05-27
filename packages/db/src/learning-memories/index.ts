@@ -1,10 +1,23 @@
-// Public surface of the M10 Learning Memory and Portfolio Export
-// `learning_memories` data-access layer
-// (learning-memory-portfolio-export epic, Issue #176).
+// Public surface of the M10 Learning Memory and Portfolio Export backend
+// (learning-memory-portfolio-export epic).
 //
-// Tasks #177–#184 will extend this barrel with the integrity check, the two
-// bounded SDK calls (Q&A + résumé bullets), the deterministic composers, and
-// the markdown / PDF exporters. For #176 only the table-level DAL is exposed.
+// - `memories`  — the typed `learning_memories` data-access layer:
+//                 `getMemory`, `getMemoryByRepo`, `createMemory`,
+//                 `updateMemory`, `upsertMemory` (the regeneration path),
+//                 and `isMemoryStale` (drives the stale banner per
+//                 PRD FR-11). Plus the `LearningMemoryContent` shape the
+//                 generators (#179 composers, #180 Q&A, #181 résumé
+//                 bullets) all produce (Issue #176).
+// - `integrity` — the reusable file + stack-reference integrity check
+//                 (`checkFileReferences`, `checkStackReferences`,
+//                 `checkArtifactIntegrity`) the two bounded SDK calls
+//                 (#180 Q&A, #181 résumé bullets) consume to verify every
+//                 generated artifact only cites files M6 surfaced and
+//                 technologies M5 explained (FR-3 / NFR-5, Issue #177).
+//
+// Additional sub-modules (the SDK calls, composers, exporters) land in
+// the remaining M10 tasks (#179, #180, #181, #182, #183) and are
+// re-exported here as they merge.
 
 export {
   createMemory,
@@ -15,3 +28,13 @@ export {
   updateMemory,
   upsertMemory,
 } from "./memories"
+
+export {
+  checkArtifactIntegrity,
+  checkFileReferences,
+  checkStackReferences,
+  type IntegrityArtifact,
+  type IntegrityArtifactBullet,
+  type IntegrityArtifactQA,
+  type IntegrityResult,
+} from "./integrity"
