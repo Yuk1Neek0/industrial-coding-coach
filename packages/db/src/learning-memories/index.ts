@@ -62,3 +62,8 @@ export {
   generateResumeBullets,
   parseResumeBulletItems,
 } from "./generate-bullets"
+
+export {
+  type PortfolioMarkdownBundle,
+  renderPortfolioMarkdownBundle,
+} from "./export-markdown"
