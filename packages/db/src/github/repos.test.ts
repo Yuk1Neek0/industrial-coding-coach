@@ -133,6 +133,12 @@ function makeFakeClient(options: FakeClientOptions = {}): GitHubClient {
     getIssue() {
       return Promise.reject(new Error("not used by the import path"))
     },
+    listIssues() {
+      return Promise.reject(new Error("not used by the import path"))
+    },
+    getIssueTimeline() {
+      return Promise.reject(new Error("not used by the import path"))
+    },
   }
 }
 
