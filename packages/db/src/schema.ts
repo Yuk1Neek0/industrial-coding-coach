@@ -711,6 +711,229 @@ export type DiffReview = typeof diffReviews.$inferSelect
 export type NewDiffReview = typeof diffReviews.$inferInsert
 
 // ---------------------------------------------------------------------------
+// Challenges + challenge attempts — M9 Debug and Expansion Challenge System
+// (debug-expansion-challenge PRD).
+//
+// Two tables keyed off the existing `repo_snapshots` (ADR 0006 — M9 adds
+// tables, not a database):
+//
+//   - `challenges`         — one row per snapshot + challenge type, holding
+//                            the typed challenge model (FR-3): type, task
+//                            description, in-/out-of-scope file sets,
+//                            acceptance criteria, and source references into
+//                            the M6 project map. Keyed `(snapshot_id, type)`
+//                            unique so R2's lazy-per-type, cached-per-snapshot
+//                            generation can look up an existing row before
+//                            issuing a new SDK call; the "new challenge"
+//                            action overwrites the same row.
+//   - `challenge_attempts` — child of `challenges`, one row per submission.
+//                            Holds the user's free-text explanation, optional
+//                            per-file code snippets, file paths the user said
+//                            they would change, a timestamp, and the grading
+//                            result (0–100 score + weak-area breakdown per
+//                            R4 / FR-5). Multiple attempts per challenge
+//                            (US-6) are preserved; the latest-outcome
+//                            accessor returns the most recent row (R5).
+//
+// Structured / list-valued fields are JSON text columns, mirroring the
+// `stack_explanations` / `project_maps` / `diff_reviews` convention. `WeakArea`
+// is reused from `diff_reviews` so M8 and M9 share one grading shape (R4).
+// ---------------------------------------------------------------------------
+
+/**
+ * The M9 challenge-type set (PRD FR-2). The "broken CI" type is gated on the
+ * snapshot exposing a real failing CI run / log (R6); the type is omitted
+ * from a snapshot's challenge list when no real failure is available, not
+ * synthesized from a CI config file.
+ */
+export type ChallengeType =
+  | "add-small-field"
+  | "trace-failed-api-call"
+  | "fix-schema-mismatch"
+  | "add-loading-error-state"
+  | "add-unit-test"
+  | "explain-broken-ci-result"
+  | "extend-module-safely"
+
+/** A single acceptance criterion the grader will check against. */
+export interface ChallengeAcceptanceCriterion {
+  /** Stable identifier of the criterion, used to key per-criterion grading. */
+  id: string
+  /** What "done" looks like, in plain language. */
+  detail: string
+}
+
+/**
+ * A pointer from a challenge back into the M6 project map it was generated
+ * from — the section of the map and the path it cites. The integrity check
+ * (Issue #141) verifies that the path resolves to a real M6-mapped file.
+ */
+export interface ChallengeSourceReference {
+  /** Which M6 project-map section this reference is from. */
+  section:
+    | "architectureOverview"
+    | "keyFileMap"
+    | "requestDataFlow"
+    | "stateFlow"
+    | "aiCallFlow"
+    | "debugPath"
+  /** The M6-mapped path the challenge is grounded in, e.g. `apps/web/...`. */
+  path: string
+  /** Plain-language note on how this reference grounds the challenge. */
+  note: string
+}
+
+/**
+ * One project-tied challenge generated for an imported repo snapshot. Each
+ * row encodes the typed challenge model (FR-3); the user submits attempts
+ * through `challenge_attempts`. Keyed `(snapshot_id, type)` unique so the
+ * lazy-per-type cache (R2) can look up before re-generating; the "new
+ * challenge" action overwrites the same row, but the attempts foreign-key
+ * is `ON DELETE CASCADE` so a regenerated challenge takes a fresh history.
+ */
+export const challenges = sqliteTable(
+  "challenges",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    /** The imported repo snapshot this challenge is generated for. */
+    snapshotId: integer("snapshot_id")
+      .notNull()
+      .references(() => repoSnapshots.id, { onDelete: "cascade" }),
+    /** The M9 challenge type — one row per (snapshot, type). */
+    type: text("type").$type<ChallengeType>().notNull(),
+    /** Plain-language description of what the user must do. */
+    taskDescription: text("task_description").notNull(),
+    /**
+     * In-scope file paths — files the user is expected to touch. Strictly
+     * limited to paths the M6 project map names (R8 / FR-3); the integrity
+     * check (Issue #141) rejects any path outside that set.
+     */
+    inScopeFiles: text("in_scope_files", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    /**
+     * Out-of-scope file paths — files the user must not touch for this
+     * challenge. Same M6-grounding rule as `inScopeFiles`.
+     */
+    outOfScopeFiles: text("out_of_scope_files", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    /** Acceptance criteria the grader will check the explanation against. */
+    acceptanceCriteria: text("acceptance_criteria", { mode: "json" })
+      .$type<ChallengeAcceptanceCriterion[]>()
+      .notNull(),
+    /** Pointers back into the M6 project map this challenge was grounded in. */
+    sourceReferences: text("source_references", { mode: "json" })
+      .$type<ChallengeSourceReference[]>()
+      .notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    /** One challenge per (snapshot, type) — R2's lazy-per-type cache key. */
+    uniqueIndex("challenges_snapshot_type_unique").on(
+      table.snapshotId,
+      table.type,
+    ),
+    /** Fast lookup of every challenge for a snapshot (Challenge List Page). */
+    index("challenges_snapshot_idx").on(table.snapshotId),
+  ],
+)
+
+/** A challenge row as read from the database. */
+export type Challenge = typeof challenges.$inferSelect
+
+/** The shape required to insert a challenge. */
+export type NewChallenge = typeof challenges.$inferInsert
+
+/** An optional per-file code snippet attached to an attempt (illustrative). */
+export interface ChallengeAttemptSnippet {
+  /** Path the snippet illustrates (keyed to an in-scope file). */
+  path: string
+  /** The user's code snippet text (not graded for style — R3 / FR-7). */
+  code: string
+}
+
+/** A per-criterion grading result, matching the M8 grading shape (R4). */
+export interface ChallengeCriterionResult {
+  /** The `ChallengeAcceptanceCriterion.id` this result responds to. */
+  criterionId: string
+  /** Whether the explanation satisfied this criterion. */
+  passed: boolean
+  /** Plain-language note on why this criterion did / did not pass. */
+  detail: string
+}
+
+/**
+ * The grading result for a submission — 0–100 numeric score + weak-area
+ * breakdown matching M8 (R4 / FR-5), plus per-criterion results and a short
+ * feedback paragraph. Stored on the attempt row as a single JSON column to
+ * keep the row total even if the grading shape evolves.
+ */
+export interface ChallengeGradingResult {
+  /** The 0–100 numeric score. */
+  score: number
+  /** Weak areas surfaced by grading — reuses the M8 `WeakArea` shape. */
+  weakAreas: WeakArea[]
+  /** Per-criterion pass/fail breakdown. */
+  criterionResults: ChallengeCriterionResult[]
+  /** A short plain-language feedback paragraph. */
+  feedback: string
+}
+
+/**
+ * One user attempt at a challenge. Multiple attempts per challenge (US-6) are
+ * preserved; the latest-outcome accessor returns the row with the largest
+ * `submittedAt` (R5). The grading result is filled when the M9 grading call
+ * (#143) completes; it stays `null` between submission and grading.
+ */
+export const challengeAttempts = sqliteTable(
+  "challenge_attempts",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    /** The challenge this attempt is against. */
+    challengeId: integer("challenge_id")
+      .notNull()
+      .references(() => challenges.id, { onDelete: "cascade" }),
+    /** The user's free-text explanation — the graded artifact (R3 / FR-7). */
+    explanation: text("explanation").notNull(),
+    /** Optional per-file code snippets the user attached (illustrative). */
+    snippets: text("snippets", { mode: "json" })
+      .$type<ChallengeAttemptSnippet[]>()
+      .notNull(),
+    /** Paths the user said they would change — illustrative, not graded. */
+    filePaths: text("file_paths", { mode: "json" })
+      .$type<string[]>()
+      .notNull(),
+    /** When the user submitted this attempt — drives latest-outcome (R5). */
+    submittedAt: integer("submitted_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    /** Grading result; null until the M9 grading call completes. */
+    grading: text("grading", { mode: "json" }).$type<ChallengeGradingResult>(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    /** Fast lookup of every attempt for a challenge (Detail Page R5). */
+    index("challenge_attempts_challenge_idx").on(table.challengeId),
+  ],
+)
+
+/** A challenge attempt as read from the database. */
+export type ChallengeAttempt = typeof challengeAttempts.$inferSelect
+
+/** The shape required to insert a challenge attempt. */
+export type NewChallengeAttempt = typeof challengeAttempts.$inferInsert
+
 // Learning units — M7 Issue-Based Learning Workspace output
 // (issue-based-learning-workspace PRD).
 //
