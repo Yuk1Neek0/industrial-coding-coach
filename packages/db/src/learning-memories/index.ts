@@ -67,3 +67,5 @@ export {
   type PortfolioMarkdownBundle,
   renderPortfolioMarkdownBundle,
 } from "./export-markdown"
+
+export { type PortfolioPdf, renderPortfolioPdf } from "./export-pdf"

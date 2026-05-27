@@ -44,6 +44,7 @@ import type {
   RepoSnapshot,
   ResumeBullet,
 } from "../schema"
+import { portfolioFilenameStem } from "./_filename-slug"
 
 // ---------------------------------------------------------------------------
 // Public surface
@@ -124,27 +125,15 @@ function buildFileMap(
 }
 
 // ---------------------------------------------------------------------------
-// Filename helpers — slug + zip filename
+// Filename helpers — shared slug + zip filename
 // ---------------------------------------------------------------------------
 
-/**
- * Lowercase + replace `/`, whitespace, and any filesystem-unsafe character
- * with `-`. Collapses runs of `-` and trims leading/trailing separators so
- * the filename is safe on Windows (no `< > : " / \ | ? *`), macOS, and Linux
- * (PRD US-6).
- */
-function slug(value: string): string {
-  const lowered = value.toLowerCase()
-  // Replace any character outside [a-z0-9._-] (which includes `/`, spaces,
-  // and the Windows-reserved set) with `-`.
-  const replaced = lowered.replace(/[^a-z0-9._-]+/g, "-")
-  // Collapse runs of `-` and trim leading/trailing `-` / `.`.
-  const collapsed = replaced.replace(/-+/g, "-").replace(/^[-.]+|[-.]+$/g, "")
-  return collapsed.length > 0 ? collapsed : "portfolio"
-}
+// The slug + filename-stem helpers live in `_filename-slug.ts` so the PDF
+// exporter (#183) emits the same `portfolio-<owner>-<repo>-<id>` prefix and
+// a downloaded `.zip` / `.pdf` pair sorts together in the user's Downloads.
 
 function buildZipFilename(snapshot: RepoSnapshot): string {
-  return `portfolio-${slug(snapshot.owner)}-${slug(snapshot.repo)}-${snapshot.id}.zip`
+  return `${portfolioFilenameStem(snapshot.owner, snapshot.repo, snapshot.id)}.zip`
 }
 
 // ---------------------------------------------------------------------------
