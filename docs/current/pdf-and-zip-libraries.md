@@ -1,10 +1,9 @@
-# M10 export libraries — ZIP (locked) + PDF (pending)
+# M10 export libraries — ZIP + PDF (both locked)
 
 Setup note for the M10 `learning-memory-portfolio-export` epic's two export
 formats. Records the **ZIP library decision** locked in by task #182
-(markdown bundle exporter). The **PDF library** is selected in task #183
-and will be appended to this file (or split into a small ADR) at that
-time.
+(markdown bundle exporter) and the **PDF library decision** locked in by
+task #183 (PDF exporter).
 
 ## ZIP — `fflate@^0.8.3`
 
@@ -46,13 +45,64 @@ time.
     which we build by writing keys in literal source order (no `Map`,
     no `Set`, no `Object.keys()` on a foreign object).
 
-## PDF — selected in #183
+## PDF — `@react-pdf/renderer@^4.5.1`
 
-Placeholder — task #183 picks between `pdfkit`, `@react-pdf/renderer`,
-or a headless-Chromium rasterizer of the markdown bundle, records the
-decision and the install source here, and ships the PDF renderer
-alongside this ZIP renderer.
+- **Where it's used:** `packages/db/src/learning-memories/export-pdf.ts` —
+  `renderPortfolioPdf()` returns a single `portfolio.pdf` Buffer
+  containing the same content as the markdown bundle's combined
+  `portfolio.md` (PRD FR-7). The Server Action that wires the *Export
+  PDF* button (#184) hands the buffer straight to a `Response` body.
+- **Why @react-pdf/renderer (not pdfkit / not Puppeteer / not headless
+  Chromium):**
+  - **No headless browser, no extra binary.** Puppeteer and Playwright
+    each bring a ~100–200 MB Chromium download and a non-trivial native
+    binding lifecycle. M10 is local-first (PRD NFR-3) and the rest of
+    the catalog stack only accepts one native binding (`better-sqlite3`);
+    a second one for PDF rendering is the wrong shape.
+  - **Pure-React rendering surface.** Q&A, résumé bullets, architecture
+    explanation, memory tree, and debug stories already have shaped
+    React renderers planned for the Portfolio Page (#184). `@react-pdf
+    /renderer`'s `<Document>` / `<Page>` / `<Text>` primitives let us
+    keep "this content, rendered" as the mental model in both
+    containers — server-action HTML on the page, server-action PDF on
+    download — without a parallel `pdfkit` imperative-cursor codebase.
+  - **Native React 19 peer support.** `@react-pdf/renderer@4.5.1`'s
+    declared peer is `react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0`
+    (verified via `pnpm view`); installs cleanly against the workspace's
+    React 19.2.6 with no `--legacy-peer-deps` and no peer warnings.
+  - **Server-side `renderToBuffer`.** The library exposes a
+    `renderToBuffer(<Document />)` entry that returns a Node `Buffer`
+    directly — same shape as the markdown bundle's `zip: Buffer`, so the
+    Server Action plumbing in #184 stays uniform.
+- **Alternative considered — `pdfkit`:** straight-Node imperative cursor
+  API, no React peer, smaller dep tree. Rejected as the *default* because
+  we'd have to invent our own layout-by-cursor primitives for every
+  section, with no reuse from the Portfolio Page's React renderers.
+  Kept on the shelf as the fallback if `@react-pdf/renderer` ever drops
+  React 19 support — the `renderPortfolioPdf` public surface is a single
+  function so the swap is one file.
+- **Install source:** the official `@react-pdf/renderer` README on
+  <https://react-pdf.org> (and its npm page,
+  <https://www.npmjs.com/package/@react-pdf/renderer>) — `pnpm add
+  @react-pdf/renderer` is the documented install command. Installed
+  scoped to `@workspace/db` via `pnpm add @react-pdf/renderer --filter
+  @workspace/db`. The lockfile and `packages/db/package.json#dependencies`
+  reflect the install; `react` was added as an explicit dependency on
+  the same package so the peer is satisfied even if `packages/db` is ever
+  consumed standalone outside the workspace.
+- **Server-only constraint.** `renderToBuffer` resolves a Node `Buffer`,
+  which is unavailable in the browser. `packages/db`'s exports map is
+  server-targeted; the PDF exporter must only be imported into a Server
+  Action — never an `"use client"` boundary.
+- **Reproducibility note (NFR-2 caveat):** `@react-pdf/renderer` writes a
+  `/CreationDate` into the PDF header so the byte output of two calls on
+  the same `(memory, snapshot)` pair is *not* identical (it differs in
+  the metadata timestamp). The functional content stream is reproducible,
+  but the byte-identical guarantee from the ZIP exporter does not carry
+  over to the PDF exporter. The M10 NFR-2 wording in the PRD asks for
+  reproducible *artifacts*, not byte-identical PDFs; the PDF exporter
+  satisfies the artifact-level reading.
 
 ---
 
-Last updated: 2026-05-27 (Issue #182).
+Last updated: 2026-05-27 (Issue #183).
