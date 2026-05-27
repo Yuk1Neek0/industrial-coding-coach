@@ -2,10 +2,10 @@
 name: learning-memory-portfolio-export
 status: backlog
 created: 2026-05-27T13:32:28Z
-updated: 2026-05-27T13:32:28Z
+updated: 2026-05-27T14:11:13Z
 progress: 0%
 prd: .claude/prds/learning-memory-portfolio-export.md
-github: (will be set on sync)
+github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/175
 ---
 
 # Epic: learning-memory-portfolio-export
@@ -336,15 +336,15 @@ Total: **9 tasks**, within the CCPM "≤ 10 tasks" guideline.
   retrospective.
 
 ## Tasks Created
-- [ ] 001.md - learning_memories schema + Drizzle migration + DAL (parallel: true)
-- [ ] 002.md - Reusable file + stack-reference integrity check (parallel: true)
-- [ ] 003.md - Portfolio Page — Page Spec + Claude Design prompt (parallel: true)
-- [ ] 004.md - Deterministic composition module (parallel: true)
-- [ ] 005.md - Interview Q&A bounded SDK call (parallel: true)
-- [ ] 006.md - Résumé-bullet bounded SDK call (parallel: false)
-- [ ] 007.md - Markdown bundle exporter (parallel: false)
-- [ ] 008.md - PDF exporter — install renderer + render bundle (parallel: false)
-- [ ] 009.md - Integrate Portfolio Page into apps/web (parallel: false)
+- [ ] #176 - learning_memories schema + Drizzle migration + DAL (parallel: true)
+- [ ] #177 - Reusable file + stack-reference integrity check (parallel: true)
+- [ ] #178 - Portfolio Page — Page Spec + Claude Design prompt (parallel: true)
+- [ ] #179 - Deterministic composition module (parallel: true)
+- [ ] #180 - Interview Q&A bounded SDK call (parallel: true)
+- [ ] #181 - Résumé-bullet bounded SDK call (parallel: false)
+- [ ] #182 - Markdown bundle exporter (parallel: false)
+- [ ] #183 - PDF exporter — install renderer + render bundle (parallel: false)
+- [ ] #184 - Integrate Portfolio Page into apps/web (parallel: false)
 
 Total tasks: 9
 Parallel tasks: 5
