@@ -10,7 +10,8 @@
     "./github": "./src/github/index.ts",
     "./stack": "./src/stack/index.ts",
     "./mapper": "./src/mapper/index.ts",
-    "./learning-units": "./src/learning-units/index.ts"
+    "./learning-units": "./src/learning-units/index.ts",
+    "./learning-memories": "./src/learning-memories/index.ts"
   },
   "scripts": {
     "lint": "eslint",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
+    "@types/react": "^19.2.15",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "drizzle-kit": "^0.31.10",
@@ -34,8 +36,11 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.99.0",
+    "@react-pdf/renderer": "^4.5.1",
     "@workspace/ai": "workspace:*",
     "better-sqlite3": "^12.10.0",
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "^0.45.2",
+    "fflate": "^0.8.3",
+    "react": "^19.2.6"
   }
 }

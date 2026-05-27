@@ -1,9 +1,11 @@
-import Link from "next/link"
+// Shared chrome for the M10 Portfolio Page (`/portfolio/[owner]/[repo]`,
+// task #184). Mirrors the M9 Challenge chrome at
+// `apps/web/app/repos/[owner]/[repo]/challenges/_components/chrome.tsx` so
+// the whole app reads as one product (inline stroke SVGs, AppNav, Badge,
+// AiLabel). Adds a "Portfolio" entry to the primary nav so the M10 surface
+// is reachable alongside Reviews (M8) and Challenges (M9).
 
-// Shared chrome for the M9 Challenge pages (task #148). Mirrors the M5 / M8
-// chrome (inline stroke SVGs, AppNav, Badge, AiLabel) so the whole app reads
-// as one product. Adds a "Challenges" entry to the primary nav so the M9
-// surface is reachable alongside Reviews (M8) and Map (M6).
+import Link from "next/link"
 
 type IconProps = {
   size?: number
@@ -45,15 +47,11 @@ export const IconArrowRight = (p: IconProps) => (
     <path d="m12 5 7 7-7 7" />
   </StrokeIcon>
 )
-export const IconExternal = (p: IconProps) => (
-  <StrokeIcon {...p}>
-    <path d="M15 3h6v6" />
-    <path d="M10 14 21 3" />
-    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-  </StrokeIcon>
-)
 export const IconLoader = (p: IconProps) => (
-  <StrokeIcon {...p} className={["spin", p.className].filter(Boolean).join(" ")}>
+  <StrokeIcon
+    {...p}
+    className={["spin", p.className].filter(Boolean).join(" ")}
+  >
     <path d="M21 12a9 9 0 1 1-6.219-8.56" />
   </StrokeIcon>
 )
@@ -69,16 +67,16 @@ export const IconAlert = (p: IconProps) => (
     <path d="M12 16h.01" />
   </StrokeIcon>
 )
+export const IconClock = (p: IconProps) => (
+  <StrokeIcon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </StrokeIcon>
+)
 export const IconSlash = (p: IconProps) => (
   <StrokeIcon {...p}>
     <circle cx="12" cy="12" r="9" />
     <path d="m5 5 14 14" />
-  </StrokeIcon>
-)
-export const IconCheck = (p: IconProps) => (
-  <StrokeIcon {...p}>
-    <circle cx="12" cy="12" r="9" />
-    <path d="m8.5 12.5 2.5 2.5 4.5-5" />
   </StrokeIcon>
 )
 export const IconRefresh = (p: IconProps) => (
@@ -87,31 +85,18 @@ export const IconRefresh = (p: IconProps) => (
     <path d="M21 3v6h-6" />
   </StrokeIcon>
 )
-export const IconFileCode = (p: IconProps) => (
+export const IconDownload = (p: IconProps) => (
   <StrokeIcon {...p}>
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-    <path d="M14 2v6h6" />
-    <path d="m10 13-2 2 2 2" />
-    <path d="m14 13 2 2-2 2" />
+    <path d="M12 3v12" />
+    <path d="m7 10 5 5 5-5" />
+    <path d="M5 21h14" />
   </StrokeIcon>
 )
-export const IconChevron = (p: IconProps) => (
+export const IconExternal = (p: IconProps) => (
   <StrokeIcon {...p}>
-    <path d="m6 9 6 6 6-6" />
-  </StrokeIcon>
-)
-export const IconHelp = (p: IconProps) => (
-  <StrokeIcon {...p}>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M9.5 9a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.1 1-1.1 1.8" />
-    <path d="M12 16h.01" />
-  </StrokeIcon>
-)
-export const IconGauge = (p: IconProps) => (
-  <StrokeIcon {...p}>
-    <path d="M3.5 16a9 9 0 1 1 17 0" />
-    <path d="m12 12 4-3" />
-    <circle cx="12" cy="12" r="1.4" />
+    <path d="M15 3h6v6" />
+    <path d="M10 14 21 3" />
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
   </StrokeIcon>
 )
 
@@ -130,7 +115,7 @@ export function GitHubMark({ size = 16 }: { size?: number }) {
   )
 }
 
-/** Pill badge — mirrors the M8 chrome's `Badge`. */
+/** Pill badge — mirrors the M8/M9 chrome's `Badge`. */
 export function Badge({
   children,
   soft,
@@ -158,7 +143,12 @@ export function Badge({
   )
 }
 
-/** App nav — same shape as the M8 chrome, with a "Challenges" entry added. */
+/**
+ * App nav — same shape as the M9 chrome, with a "Portfolio" entry added.
+ * The unifying nav pass across M7/M8/M9/M10 remains an unscoped follow-up
+ * (called out in the integration notes and in PR #184) — until then each
+ * milestone's chrome carries its own copy with its own active state.
+ */
 export function AppNav({
   active,
 }: {
@@ -177,7 +167,7 @@ export function AppNav({
       <div className="nav-brand">
         <span className="mark" aria-hidden="true" />
         <span>Coach</span>
-        <span className="mark-label">v0.5 · m9</span>
+        <span className="mark-label">v0.6 · m10</span>
       </div>
       <div className="nav-links">
         <Link href="/" className={active === "home" ? "active" : undefined}>
@@ -257,4 +247,30 @@ export function relTime(iso: string | Date): string {
   const d = Math.round(h / 24)
   if (d < 30) return `${d} day${d === 1 ? "" : "s"} ago`
   return date.toLocaleDateString()
+}
+
+/** Map an M5/M6/M7/M8/M9 source row to a route-relative href the page links to. */
+export function sourceHref(
+  source: { milestone: "M5" | "M6" | "M7" | "M8" | "M9"; rowId: number },
+  owner: string,
+  repo: string,
+): string {
+  // M9 surfaces challenges by `/challenges/[challengeId]`; the leaf's row id
+  // for M9 is the challenge id (composer line 296). For M7/M8 we link back
+  // to the per-feature list — the deep link to the row needs the row's
+  // issueRef / PR number which the leaf shape does not carry. The list
+  // pages let the user find the row easily; the integration notes (this
+  // task) document the trade-off so future M10-touching work knows.
+  switch (source.milestone) {
+    case "M5":
+      return `/stack`
+    case "M6":
+      return `/map/${owner}/${repo}`
+    case "M7":
+      return `/repos/${owner}/${repo}/issues`
+    case "M8":
+      return `/reviews`
+    case "M9":
+      return `/repos/${owner}/${repo}/challenges/${source.rowId}`
+  }
 }

@@ -1107,3 +1107,201 @@ export type LearningUnit = typeof learningUnits.$inferSelect
 
 /** The shape required to insert a learning unit. */
 export type NewLearningUnit = typeof learningUnits.$inferInsert
+
+// ---------------------------------------------------------------------------
+// Learning memories — M10 Learning Memory and Portfolio Export
+// (learning-memory-portfolio-export PRD).
+//
+// One row per imported repo snapshot, holding the five artifacts the
+// Portfolio Page renders and the markdown / PDF exporter packages: interview
+// Q&A, résumé bullets, an architecture explanation, a learning memory tree
+// (with weak areas honestly surfaced as "still to revisit"), and per-attempt
+// debug stories. Two of those (interview_qa, resume_bullets) come from
+// bounded Anthropic SDK calls; the other three are deterministically composed
+// from the shipped M5/M6/M7/M8/M9 rows (PRD FR-2). The row is upserted on
+// every regeneration — per-snapshot unique — and `generated_at` lets the
+// Portfolio Page detect a stale memory when `repo_snapshots.updated_at` is
+// newer (PRD FR-11).
+
+/** One interview-style Q&A grounded in this repo's M5/M6/M7/M8/M9 rows. */
+export interface InterviewQA {
+  /** The interview-style question, phrased about this specific repo. */
+  question: string
+  /** The defendable answer grounded in real rows from prior milestones. */
+  answer: string
+  /** Which of the five ground areas the M10 PRD names this Q&A covers. */
+  groundArea:
+    | "stack"
+    | "architecture"
+    | "issue-learning"
+    | "diff-review"
+    | "debug-expansion"
+  /**
+   * File paths or stack technologies cited by the answer. The integrity
+   * check (task #177) verifies each entry resolves to an M6 project-map
+   * file or an M5 stack-explanations row.
+   */
+  sourceReferences: string[]
+}
+
+/** One résumé bullet in industry-standard "verb + outcome + technology" form. */
+export interface ResumeBullet {
+  /** The bullet text. Enforced ≤ 160 chars by the generator (PRD US-2). */
+  text: string
+  /** Stack technologies named in the bullet (every entry must resolve to M5). */
+  technologies: string[]
+  /** File paths from the M6 project map this bullet's claim is grounded in. */
+  sourceFiles: string[]
+}
+
+/**
+ * One section of the deterministic architecture explanation. Named
+ * `ArchitectureExplanationSection` (not `ArchitectureSection`) so it does
+ * not collide with M6's `ArchitectureSection` (which is the project map's
+ * layer-overview shape: `{ title, detail }`).
+ */
+export interface ArchitectureExplanationSection {
+  /** Section heading, e.g. "Stack & tooling" or "Request flow". */
+  heading: string
+  /** Markdown-flavoured prose for the section. */
+  body: string
+  /** File paths from the M6 project map this section cites. */
+  citedFiles: string[]
+}
+
+/** The deterministic architecture explanation, ~1–2 pages of prose. */
+export interface ArchitectureExplanation {
+  /** Opening paragraph that frames the project at a glance. */
+  intro: string
+  /** Section covering the stack choices (composed from M5 stack_explanations). */
+  stackSection: ArchitectureExplanationSection
+  /** Section covering the architectural layers (composed from M6 project_maps). */
+  architectureSection: ArchitectureExplanationSection
+  /** Section covering the key data / request / state flows (also from M6). */
+  keyFlowsSection: ArchitectureExplanationSection
+}
+
+/** One concrete concept the user learned, with a pointer back to the row that taught it. */
+export interface LearningMemoryTreeLeaf {
+  /** The concrete concept, e.g. "Server Actions" or "Drizzle migrations". */
+  concept: string
+  /** Plain-language explanation of how the concept manifests here. */
+  detail: string
+  /** The milestone + row id that taught this concept. */
+  source: {
+    /** Which prior milestone's row taught the concept. */
+    milestone: "M5" | "M6" | "M7" | "M8" | "M9"
+    /** Primary-key id of the row in its table. */
+    rowId: number
+    /** Optional file path or module identifier from that row. */
+    locator?: string
+  }
+}
+
+/** One branch of the learning memory tree, grouping related learned concepts. */
+export interface LearningMemoryTreeBranch {
+  /** Branch heading, e.g. "Stack & tooling" or "Data flow". */
+  heading: string
+  /** The concept leaves under this branch. */
+  leaves: LearningMemoryTreeLeaf[]
+}
+
+/** A weak-area entry surfaced honestly as "still to revisit" (PRD FR-4). */
+export interface LearningMemoryRevisitEntry {
+  /** Reuses the same weak-area shape M7/M8/M9 grading produces. */
+  area: string
+  /** Why this area was judged weak, in plain language. */
+  detail: string
+  /** Which milestone's row surfaced this weak area. */
+  source: {
+    milestone: "M7" | "M8" | "M9"
+    rowId: number
+  }
+}
+
+/**
+ * The structured learning memory for one imported repo — branches of concepts
+ * the user has learned plus an honest `stillToRevisit` list of weak areas
+ * from M7/M8/M9 grading (PRD FR-4).
+ */
+export interface LearningMemoryTree {
+  /** Branches of learned concepts. */
+  branches: LearningMemoryTreeBranch[]
+  /** Weak-area entries from M7/M8/M9 grading — what the user still doesn't know. */
+  stillToRevisit: LearningMemoryRevisitEntry[]
+}
+
+/** One per-attempt narrative composed from an M9 `challenge_attempts` row. */
+export interface DebugStory {
+  /** Which M9 challenge type the attempt was for. */
+  challengeType: string
+  /** Plain-language summary of the challenge's task description. */
+  taskSummary: string
+  /** A short excerpt of the user's explanation that captures their reasoning. */
+  explanationExcerpt: string
+  /** The grading outcome for the attempt. */
+  gradingResult: {
+    /** 0–100 score from M9 grading (R4). */
+    score: number
+    /** Whether the score met the M8/M9 shared pass threshold. */
+    passed: boolean
+    /** Top weak area, if any — reuses the M8 `WeakArea` shape. */
+    topWeakArea?: WeakArea
+  }
+}
+
+/**
+ * One learning memory row per imported repo snapshot. Holds all five
+ * Portfolio Page artifacts as JSON columns. Upserted on every regeneration
+ * (`snapshot_id` is unique).
+ */
+export const learningMemories = sqliteTable(
+  "learning_memories",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    /** The imported repo snapshot this memory belongs to. */
+    snapshotId: integer("snapshot_id")
+      .notNull()
+      .references(() => repoSnapshots.id, { onDelete: "cascade" }),
+    /** Interview Q&A, generated by the M10 bounded SDK call (task #180). */
+    interviewQa: text("interview_qa", { mode: "json" })
+      .$type<InterviewQA[]>()
+      .notNull(),
+    /** Résumé bullets, generated by the M10 bounded SDK call (task #181). */
+    resumeBullets: text("resume_bullets", { mode: "json" })
+      .$type<ResumeBullet[]>()
+      .notNull(),
+    /** Architecture explanation, deterministically composed (task #179). */
+    architectureExplanation: text("architecture_explanation", { mode: "json" })
+      .$type<ArchitectureExplanation>()
+      .notNull(),
+    /** Learning memory tree, deterministically composed (task #179). */
+    learningMemoryTree: text("learning_memory_tree", { mode: "json" })
+      .$type<LearningMemoryTree>()
+      .notNull(),
+    /** Per-attempt debug stories, deterministically composed (task #179). */
+    debugStories: text("debug_stories", { mode: "json" })
+      .$type<DebugStory[]>()
+      .notNull(),
+    /** When the memory was last (re)generated — drives the stale banner (PRD FR-11). */
+    generatedAt: integer("generated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    /** One memory row per snapshot — regeneration is an upsert (PRD FR-1, FR-5). */
+    uniqueIndex("learning_memories_snapshot_unique").on(table.snapshotId),
+  ],
+)
+
+/** A learning memory as read from the database. */
+export type LearningMemory = typeof learningMemories.$inferSelect
+
+/** The shape required to insert a learning memory. */
+export type NewLearningMemory = typeof learningMemories.$inferInsert
