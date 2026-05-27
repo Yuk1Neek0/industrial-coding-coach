@@ -334,3 +334,19 @@ Total: **9 tasks**, within the CCPM "≤ 10 tasks" guideline.
   `epic/learning-memory-portfolio-export`** — sub-agents inside the
   epic; but not in parallel with another schema-adding epic per the M9
   retrospective.
+
+## Tasks Created
+- [ ] 001.md - learning_memories schema + Drizzle migration + DAL (parallel: true)
+- [ ] 002.md - Reusable file + stack-reference integrity check (parallel: true)
+- [ ] 003.md - Portfolio Page — Page Spec + Claude Design prompt (parallel: true)
+- [ ] 004.md - Deterministic composition module (parallel: true)
+- [ ] 005.md - Interview Q&A bounded SDK call (parallel: true)
+- [ ] 006.md - Résumé-bullet bounded SDK call (parallel: false)
+- [ ] 007.md - Markdown bundle exporter (parallel: false)
+- [ ] 008.md - PDF exporter — install renderer + render bundle (parallel: false)
+- [ ] 009.md - Integrate Portfolio Page into apps/web (parallel: false)
+
+Total tasks: 9
+Parallel tasks: 5
+Sequential tasks: 4
+Estimated total effort: 76 hours
