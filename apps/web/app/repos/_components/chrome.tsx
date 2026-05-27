@@ -197,6 +197,7 @@ export function AppNav({
     | "stack"
     | "reviews"
     | "repos"
+    | "portfolio"
 }) {
   return (
     <nav className="nav" aria-label="Primary">
@@ -238,6 +239,12 @@ export function AppNav({
           className={active === "reviews" ? "active" : undefined}
         >
           Reviews
+        </Link>
+        <Link
+          href="/import"
+          className={active === "portfolio" ? "active" : undefined}
+        >
+          Portfolio
         </Link>
       </div>
       <div className="nav-end">
