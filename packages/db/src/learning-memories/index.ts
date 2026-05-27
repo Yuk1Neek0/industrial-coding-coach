@@ -40,6 +40,12 @@ export {
 } from "./integrity"
 
 export {
+  composeArchitectureExplanation,
+  composeDebugStories,
+  composeLearningMemoryTree,
+} from "./compose"
+
+export {
   GenerateInterviewQAError,
   type GenerateInterviewQAErrorKind,
   type GenerateInterviewQAOptions,
