@@ -2,8 +2,8 @@
 name: ccpm-integration
 status: backlog
 created: 2026-06-02T13:09:15Z
-updated: 2026-06-02T15:11:37Z
-progress: 44%
+updated: 2026-06-02T15:21:23Z
+progress: 56%
 prd: .claude/prds/ccpm-integration.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/196
 ---
@@ -188,7 +188,7 @@ parallelism (1, 2, 3) and Wave-2/3 overlap (5 ∥ 4; 8 ∥ 6) compress wall-cloc
 - [x] #198 - Generalized CCPM parser (PRD + epic + task) (parallel: true)
 - [x] #199 - Snapshot coverage for .claude CCPM artifacts (parallel: true)
 - [x] #200 - Traceability graph + detection + degradation (parallel: true, deps: 2)
-- [ ] #201 - Live issue/PR linking at import (local-first) (parallel: true, deps: 1,2,3)
+- [x] #201 - Live issue/PR linking at import (local-first) (parallel: true, deps: 1,2,3)
 - [ ] #202 - Teaching layer (deterministic, parameterized) (parallel: true, deps: 4)
 - [ ] #203 - Typed data-access layer (getDeliveryMap) (parallel: true, deps: 1,4,5,6)
 - [ ] #204 - Delivery page — Page Spec + Claude Design prompt (parallel: true, deps: 4)
