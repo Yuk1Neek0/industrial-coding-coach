@@ -96,6 +96,36 @@ describe("classifyKeyFile", () => {
     expect(classifyKeyFile(dir("package.json"))).toBeNull()
     expect(classifyKeyFile(dir(".github/workflows"))).toBeNull()
   })
+
+  it("classifies CCPM PRDs, epics, and tasks (incl. archived/)", () => {
+    expect(classifyKeyFile(blob(".claude/prds/ccpm-integration.md"))).toBe(
+      "ccpm-prd",
+    )
+    expect(classifyKeyFile(blob(".claude/epics/foo/epic.md"))).toBe("ccpm-epic")
+    expect(classifyKeyFile(blob(".claude/epics/foo/001.md"))).toBe("ccpm-task")
+    expect(classifyKeyFile(blob(".claude/epics/archived/foo/epic.md"))).toBe(
+      "ccpm-epic",
+    )
+    expect(classifyKeyFile(blob(".claude/epics/archived/foo/099.md"))).toBe(
+      "ccpm-task",
+    )
+  })
+
+  it("does NOT capture non-artifact .claude files", () => {
+    // Epic bookkeeping + non-numeric task-dir files are not artifacts.
+    expect(classifyKeyFile(blob(".claude/epics/foo/001-analysis.md"))).toBeNull()
+    expect(classifyKeyFile(blob(".claude/epics/foo/github-mapping.md"))).toBeNull()
+    expect(
+      classifyKeyFile(blob(".claude/epics/foo/execution-status.md")),
+    ).toBeNull()
+    expect(
+      classifyKeyFile(blob(".claude/epics/foo/updates/1/progress.md")),
+    ).toBeNull()
+    // Skill / settings files under .claude are not CCPM artifacts.
+    expect(classifyKeyFile(blob(".claude/skills/ccpm/SKILL.md"))).toBeNull()
+    expect(classifyKeyFile(blob(".claude/settings.json"))).toBeNull()
+    expect(classifyKeyFile(blob(".claude/prds/nested/x.md"))).toBeNull()
+  })
 })
 
 describe("selectKeyFiles", () => {
@@ -164,5 +194,31 @@ describe("selectKeyFiles", () => {
 
   it("returns an empty list for a tree with no key files", () => {
     expect(selectKeyFiles([blob("src/a.ts"), dir("src")])).toEqual([])
+  })
+
+  it("selects CCPM artifacts (PRDs, epics, tasks, incl. archived) and skips noise", () => {
+    const ccpmTree: TreeEntry[] = [
+      blob(".claude/prds/ccpm-integration.md", 4000),
+      dir(".claude/epics/ccpm-integration"),
+      blob(".claude/epics/ccpm-integration/epic.md", 6000),
+      blob(".claude/epics/ccpm-integration/198.md", 1500),
+      blob(".claude/epics/ccpm-integration/github-mapping.md", 800),
+      blob(".claude/epics/archived/m10/epic.md", 5000),
+      blob(".claude/epics/archived/m10/176.md", 1200),
+      blob(".claude/skills/ccpm/SKILL.md", 9000),
+    ]
+    const byPath = new Map(
+      selectKeyFiles(ccpmTree).map((s) => [s.entry.path, s.category]),
+    )
+    expect(byPath.get(".claude/prds/ccpm-integration.md")).toBe("ccpm-prd")
+    expect(byPath.get(".claude/epics/ccpm-integration/epic.md")).toBe("ccpm-epic")
+    expect(byPath.get(".claude/epics/ccpm-integration/198.md")).toBe("ccpm-task")
+    expect(byPath.get(".claude/epics/archived/m10/epic.md")).toBe("ccpm-epic")
+    expect(byPath.get(".claude/epics/archived/m10/176.md")).toBe("ccpm-task")
+    // Noise is not captured.
+    expect(byPath.has(".claude/epics/ccpm-integration/github-mapping.md")).toBe(
+      false,
+    )
+    expect(byPath.has(".claude/skills/ccpm/SKILL.md")).toBe(false)
   })
 })
