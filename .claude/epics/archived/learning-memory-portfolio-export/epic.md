@@ -1,6 +1,6 @@
 ---
 name: learning-memory-portfolio-export
-status: backlog
+status: completed
 created: 2026-05-27T13:32:28Z
 updated: 2026-05-27T14:11:13Z
 progress: 0%

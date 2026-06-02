@@ -1,6 +1,6 @@
 ---
 name: issue-based-learning-workspace
-status: backlog
+status: completed
 created: 2026-05-24T19:36:42Z
 progress: 0%
 prd: .claude/prds/issue-based-learning-workspace.md

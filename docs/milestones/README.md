@@ -20,4 +20,5 @@ those plans.
 | M7 — Issue-Based Learning Workspace | [`M7-issue-based-learning-workspace.md`](M7-issue-based-learning-workspace.md) | ✅ Complete |
 | M8 — Diff Review and Understanding Check | [`M8-diff-review.md`](M8-diff-review.md) | ✅ Complete |
 | M9 — Debug and Expansion Challenge System | [`M9-debug-expansion-challenge.md`](M9-debug-expansion-challenge.md) | ✅ Complete |
+| M10 — Learning Memory and Portfolio Export | [`M10-learning-memory-portfolio-export.md`](M10-learning-memory-portfolio-export.md) | ✅ Complete |
 | M11 — GitHub Integration | [`M11-github-integration.md`](M11-github-integration.md) | ✅ Complete |

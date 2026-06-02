@@ -1,6 +1,6 @@
 ---
 name: debug-expansion-challenge
-status: backlog
+status: completed
 created: 2026-05-24T19:37:17Z
 progress: 0%
 prd: .claude/prds/debug-expansion-challenge.md
