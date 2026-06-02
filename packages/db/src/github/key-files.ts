@@ -25,6 +25,12 @@ export type KeyFileCategory =
   | "readme"
   /** A CI workflow file under `.github/workflows/`. */
   | "ci-workflow"
+  /** A CCPM PRD (`.claude/prds/<name>.md`). */
+  | "ccpm-prd"
+  /** A CCPM epic (`.claude/epics/[archived/]<epic>/epic.md`). */
+  | "ccpm-epic"
+  /** A CCPM task (`.claude/epics/[archived/]<epic>/<N>.md`). */
+  | "ccpm-task"
 
 /** A tree entry chosen for import, paired with why it was chosen. */
 export interface SelectedKeyFile {
@@ -112,6 +118,22 @@ const README_NOISE_DIRS: readonly string[] = [
  */
 const README_MAX_DEPTH = 3
 
+/**
+ * CCPM delivery-workflow artifacts under `.claude/` (Issue #199). These carry
+ * the PRD → epic → task traceability M12 reconstructs. Their CONTENTS were not
+ * captured before — key-file selection ignored `.claude/`, so `repo_files` held
+ * tree entries but no bodies, and even M7's `listCcpmTasks` came back empty on a
+ * real import. Classifying them here routes their bodies through the existing
+ * import + persistence pipeline (no new fetch infrastructure).
+ *
+ * The `archived/` subtree IS included (the map shows archived epics, US-5).
+ * These patterns mirror the path classification in `ccpm/parse.ts` — the parser
+ * consumes exactly the files captured here; keep the two in sync.
+ */
+const CCPM_PRD_PATH = /^\.claude\/prds\/[^/]+\.md$/
+const CCPM_EPIC_PATH = /^\.claude\/epics\/(?:archived\/)?[^/]+\/epic\.md$/
+const CCPM_TASK_PATH = /^\.claude\/epics\/(?:archived\/)?[^/]+\/\d+\.md$/
+
 /** Return the last `/`-separated segment of a repo-relative path. */
 function basename(filePath: string): string {
   const segments = filePath.split("/")
@@ -127,6 +149,12 @@ export function classifyKeyFile(entry: TreeEntry): KeyFileCategory | null {
 
   const path = entry.path
   const name = basename(path).toLowerCase()
+
+  // CCPM delivery-workflow artifacts (PRDs, epics, tasks — incl. archived/).
+  // Checked first: their `.claude/` paths never overlap the other categories.
+  if (CCPM_PRD_PATH.test(path)) return "ccpm-prd"
+  if (CCPM_EPIC_PATH.test(path)) return "ccpm-epic"
+  if (CCPM_TASK_PATH.test(path)) return "ccpm-task"
 
   // CI workflow files: any file directly under .github/workflows/.
   if (

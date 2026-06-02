@@ -24,6 +24,7 @@ import type {
 } from "./client"
 import { GitHubError, fail, ok, type GitHubResult } from "./errors"
 import { importRepository } from "./import"
+import { listCcpmTasks } from "./ccpm-task-adapter"
 
 const migrationsFolder = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -78,6 +79,10 @@ interface FakeClientOptions {
   fileOverrides?: Record<string, GitHubError>
   /** Records every getFileContent path requested, in order. */
   fetchedPaths?: string[]
+  /** Override the served tree (defaults to {@link TREE_ENTRIES}). */
+  treeEntries?: TreeEntry[]
+  /** Override per-path file content (defaults to {@link FILE_CONTENT}). */
+  contentMap?: Record<string, string>
 }
 
 /**
@@ -94,7 +99,11 @@ function makeFakeClient(options: FakeClientOptions = {}): GitHubClient {
     getRepoTree() {
       return Promise.resolve(
         options.tree ??
-          ok({ commitSha: "commit-abc", entries: TREE_ENTRIES, truncated: false }),
+          ok({
+            commitSha: "commit-abc",
+            entries: options.treeEntries ?? TREE_ENTRIES,
+            truncated: false,
+          }),
       )
     },
     getFileContent(_ref, filePath: string) {
@@ -102,7 +111,7 @@ function makeFakeClient(options: FakeClientOptions = {}): GitHubClient {
       options.fetchedPaths?.push(filePath)
       const override = options.fileOverrides?.[filePath]
       if (override) return Promise.resolve(fail(override))
-      const content = FILE_CONTENT[filePath]
+      const content = (options.contentMap ?? FILE_CONTENT)[filePath]
       if (content === undefined) {
         return Promise.resolve(
           fail(new GitHubError("not_found", `no fixture for ${filePath}`)),
@@ -438,5 +447,109 @@ describe("importRepository — typed error surfacing (PRD FR-7)", () => {
     expect(result.data.files.map((f) => f.path)).not.toContain(
       "tsconfig.json",
     )
+  })
+})
+
+describe("importRepository — CCPM artifact capture (Issue #199)", () => {
+  let db: CatalogDb
+
+  beforeEach(() => {
+    db = makeTestDb()
+  })
+
+  const ACME_META: RepoMetadata = {
+    owner: "acme",
+    repo: "widgets",
+    description: "A CCPM-managed repo",
+    defaultBranch: "main",
+    primaryLanguage: "TypeScript",
+    isPrivate: false,
+    htmlUrl: "https://github.com/acme/widgets",
+  }
+
+  const CCPM_TREE: TreeEntry[] = [
+    { path: "package.json", type: "blob", sha: "f-pkg", size: 30 },
+    { path: ".claude/prds/feature.md", type: "blob", sha: "f-prd", size: 60 },
+    { path: ".claude/epics/feature", type: "tree", sha: "t-epic" },
+    { path: ".claude/epics/feature/epic.md", type: "blob", sha: "f-epic", size: 80 },
+    { path: ".claude/epics/feature/001.md", type: "blob", sha: "f-001", size: 120 },
+    // Noise that must NOT be captured.
+    { path: ".claude/epics/feature/github-mapping.md", type: "blob", sha: "f-map", size: 40 },
+    { path: ".claude/skills/ccpm/SKILL.md", type: "blob", sha: "f-skill", size: 40 },
+    // Archived task — captured by import, but excluded by M7's listCcpmTasks.
+    { path: ".claude/epics/archived/old/099.md", type: "blob", sha: "f-099", size: 80 },
+  ]
+
+  const TASK_001 = `---
+name: First task
+status: open
+github: https://github.com/acme/widgets/issues/501
+depends_on: []
+---
+
+# Task: First task
+
+Body.
+`
+
+  const CCPM_CONTENT: Record<string, string> = {
+    "package.json": "{}",
+    ".claude/prds/feature.md": "---\nname: feature\n---\nPRD body",
+    ".claude/epics/feature/epic.md":
+      "---\nname: feature\nprd: .claude/prds/feature.md\n---\nEpic body",
+    ".claude/epics/feature/001.md": TASK_001,
+    ".claude/epics/archived/old/099.md":
+      "---\nname: archived task\nstatus: closed\n---\nbody",
+  }
+
+  it("captures .claude PRDs/epics/tasks (incl. archived) with categories; skips noise", async () => {
+    const result = await importRepository({
+      source: "acme/widgets",
+      client: makeFakeClient({
+        metadata: ok(ACME_META),
+        treeEntries: CCPM_TREE,
+        contentMap: CCPM_CONTENT,
+      }),
+      db,
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    const byPath = new Map(result.data.files.map((f) => [f.path, f.category]))
+    expect(byPath.get(".claude/prds/feature.md")).toBe("ccpm-prd")
+    expect(byPath.get(".claude/epics/feature/epic.md")).toBe("ccpm-epic")
+    expect(byPath.get(".claude/epics/feature/001.md")).toBe("ccpm-task")
+    expect(byPath.get(".claude/epics/archived/old/099.md")).toBe("ccpm-task")
+    // The bodies are present, not just tree entries.
+    const task = result.data.files.find(
+      (f) => f.path === ".claude/epics/feature/001.md",
+    )
+    expect(task?.content).toContain("# Task: First task")
+    // Noise is not captured.
+    expect(byPath.has(".claude/epics/feature/github-mapping.md")).toBe(false)
+    expect(byPath.has(".claude/skills/ccpm/SKILL.md")).toBe(false)
+  })
+
+  it("makes M7's listCcpmTasks return real tasks from the imported snapshot", async () => {
+    const result = await importRepository({
+      source: "acme/widgets",
+      client: makeFakeClient({
+        metadata: ok(ACME_META),
+        treeEntries: CCPM_TREE,
+        contentMap: CCPM_CONTENT,
+      }),
+      db,
+    })
+    expect(result.ok).toBe(true)
+
+    // Before #199 this came back empty (the bodies were never imported).
+    const tasks = await listCcpmTasks("acme", "widgets", { db })
+    const refs = tasks.map((t) => t.issueRef)
+    expect(refs).toContain("epic/feature/001")
+    expect(
+      tasks.find((t) => t.issueRef === "epic/feature/001")?.title,
+    ).toBe("First task")
+    // M7's adapter excludes archived/, so the archived task is not listed.
+    expect(refs).not.toContain("epic/old/099")
   })
 })
