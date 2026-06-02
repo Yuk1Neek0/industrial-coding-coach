@@ -1,6 +1,6 @@
 ---
 name: ccpm-integration
-status: backlog
+status: completed
 created: 2026-06-02T13:09:15Z
 updated: 2026-06-02T16:01:16Z
 progress: 100%
