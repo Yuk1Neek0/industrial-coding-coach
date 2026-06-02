@@ -2,8 +2,8 @@
 name: ccpm-integration
 status: backlog
 created: 2026-06-02T13:09:15Z
-updated: 2026-06-02T13:34:56Z
-progress: 0%
+updated: 2026-06-02T14:10:26Z
+progress: 11%
 prd: .claude/prds/ccpm-integration.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/196
 ---
@@ -185,7 +185,7 @@ parallelism (1, 2, 3) and Wave-2/3 overlap (5 ∥ 4; 8 ∥ 6) compress wall-cloc
 
 ## Tasks Created
 - [ ] #197 - CCPM artifact storage — schema + Drizzle migration (parallel: true)
-- [ ] #198 - Generalized CCPM parser (PRD + epic + task) (parallel: true)
+- [x] #198 - Generalized CCPM parser (PRD + epic + task) (parallel: true)
 - [ ] #199 - Snapshot coverage for .claude CCPM artifacts (parallel: true)
 - [ ] #200 - Traceability graph + detection + degradation (parallel: true, deps: 2)
 - [ ] #201 - Live issue/PR linking at import (local-first) (parallel: true, deps: 1,2,3)
