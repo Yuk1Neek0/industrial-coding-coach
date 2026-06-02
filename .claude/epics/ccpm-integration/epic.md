@@ -2,8 +2,8 @@
 name: ccpm-integration
 status: backlog
 created: 2026-06-02T13:09:15Z
-updated: 2026-06-02T13:34:56Z
-progress: 0%
+updated: 2026-06-02T16:01:16Z
+progress: 100%
 prd: .claude/prds/ccpm-integration.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/196
 ---
@@ -184,15 +184,15 @@ integration. No new external tooling. Critical path: 2 → 4 → 6/7 → 9; Wave
 parallelism (1, 2, 3) and Wave-2/3 overlap (5 ∥ 4; 8 ∥ 6) compress wall-clock.
 
 ## Tasks Created
-- [ ] #197 - CCPM artifact storage — schema + Drizzle migration (parallel: true)
-- [ ] #198 - Generalized CCPM parser (PRD + epic + task) (parallel: true)
-- [ ] #199 - Snapshot coverage for .claude CCPM artifacts (parallel: true)
-- [ ] #200 - Traceability graph + detection + degradation (parallel: true, deps: 2)
-- [ ] #201 - Live issue/PR linking at import (local-first) (parallel: true, deps: 1,2,3)
-- [ ] #202 - Teaching layer (deterministic, parameterized) (parallel: true, deps: 4)
-- [ ] #203 - Typed data-access layer (getDeliveryMap) (parallel: true, deps: 1,4,5,6)
-- [ ] #204 - Delivery page — Page Spec + Claude Design prompt (parallel: true, deps: 4)
-- [ ] #205 - Integrate the Delivery page into apps/web (parallel: false, deps: 7,8)
+- [x] #197 - CCPM artifact storage — schema + Drizzle migration (parallel: true)
+- [x] #198 - Generalized CCPM parser (PRD + epic + task) (parallel: true)
+- [x] #199 - Snapshot coverage for .claude CCPM artifacts (parallel: true)
+- [x] #200 - Traceability graph + detection + degradation (parallel: true, deps: 2)
+- [x] #201 - Live issue/PR linking at import (local-first) (parallel: true, deps: 1,2,3)
+- [x] #202 - Teaching layer (deterministic, parameterized) (parallel: true, deps: 4)
+- [x] #203 - Typed data-access layer (getDeliveryMap) (parallel: true, deps: 1,4,5,6)
+- [x] #204 - Delivery page — Page Spec + Claude Design prompt (parallel: true, deps: 4)
+- [x] #205 - Integrate the Delivery page into apps/web (parallel: false, deps: 7,8)
 
 Total tasks: 9
 Parallel tasks: 8 (001–008 — gated by their deps, but conflict-free)

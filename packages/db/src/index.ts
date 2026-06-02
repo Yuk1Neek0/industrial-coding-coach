@@ -1,4 +1,5 @@
 export * from "./catalog"
+export * from "./ccpm"
 export * from "./challenges"
 export * from "./client"
 export * from "./diff"

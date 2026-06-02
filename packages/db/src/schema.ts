@@ -278,6 +278,64 @@ export const repoFiles = sqliteTable(
 )
 
 // ---------------------------------------------------------------------------
+// CCPM issue/PR links — M12 CCPM Integration (ccpm-integration PRD FR-4, AD-4).
+//
+// For each CCPM task that carries a `github:` issue reference, the import-time
+// linking pass (Issue #201) resolves the issue's state and its closing PR via
+// the read-only GitHub client, and persists the result here so the delivery-map
+// view reads links LOCALLY and makes zero network calls (ADR 0009, local-first).
+//
+// Design note: parsed CCPM artifacts are NOT stored — their bodies already live
+// in `repo_files` (captured by Issue #199) and are re-parsed on read (cheap,
+// deterministic). Only this network-derived link data needs persistence. Child
+// of a `repo_snapshots` row; replaced wholesale on re-import (like `repo_files`).
+// ---------------------------------------------------------------------------
+
+export const ccpmIssueLinks = sqliteTable(
+  "ccpm_issue_links",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    /** Owning snapshot. */
+    snapshotId: integer("snapshot_id")
+      .notNull()
+      .references(() => repoSnapshots.id, { onDelete: "cascade" }),
+    /** Stable task ref this link belongs to, e.g. `epic/<epicDir>/<taskId>`. */
+    taskRef: text("task_ref").notNull(),
+    /** The GitHub issue number parsed from the task's `github:` field. */
+    issueNumber: integer("issue_number").notNull(),
+    /** Resolved issue state (`open` / `closed`), or `null` if linking failed. */
+    issueState: text("issue_state"),
+    /** Closing PR number, or `null` (issue open / no PR / linking failed). */
+    closingPrNumber: integer("closing_pr_number"),
+    /** Closing PR URL, or `null`. */
+    closingPrUrl: text("closing_pr_url"),
+    /** Closing PR title, or `null`. */
+    closingPrTitle: text("closing_pr_title"),
+    /**
+     * Beginner-safe reason the link could not be resolved (the four GitHub
+     * boundary kinds + a generic fallback), or `null` on success. Never a raw
+     * HTTP status / stack trace (ccpm-integration NFR, mirrors M11).
+     */
+    failureReason: text("failure_reason"),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    /** One link row per task within a snapshot. */
+    uniqueIndex("ccpm_issue_links_snapshot_task_unique").on(
+      table.snapshotId,
+      table.taskRef,
+    ),
+    /** Fast lookup of all links for a snapshot. */
+    index("ccpm_issue_links_snapshot_idx").on(table.snapshotId),
+  ],
+)
+
+// ---------------------------------------------------------------------------
 // Recommendations — M4 Recommendation Engine output (recommendation-engine PRD).
 //
 // One row per recommendation: the user-context intake it was computed from, the
@@ -386,6 +444,12 @@ export type RepoFile = typeof repoFiles.$inferSelect
 
 /** The shape required to insert an imported key-file. */
 export type NewRepoFile = typeof repoFiles.$inferInsert
+
+/** A persisted CCPM issue/PR link annotation as read from the database. */
+export type CcpmIssueLink = typeof ccpmIssueLinks.$inferSelect
+
+/** The shape required to insert a CCPM issue/PR link annotation. */
+export type NewCcpmIssueLink = typeof ccpmIssueLinks.$inferInsert
 
 // ---------------------------------------------------------------------------
 // Stack explanations — M5 Stack Decision Explainer output (stack-explainer PRD).
