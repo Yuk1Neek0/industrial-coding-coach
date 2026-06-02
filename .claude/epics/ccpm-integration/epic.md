@@ -2,8 +2,8 @@
 name: ccpm-integration
 status: backlog
 created: 2026-06-02T13:09:15Z
-updated: 2026-06-02T15:37:41Z
-progress: 78%
+updated: 2026-06-02T15:47:32Z
+progress: 89%
 prd: .claude/prds/ccpm-integration.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/196
 ---
@@ -191,7 +191,7 @@ parallelism (1, 2, 3) and Wave-2/3 overlap (5 ∥ 4; 8 ∥ 6) compress wall-cloc
 - [x] #201 - Live issue/PR linking at import (local-first) (parallel: true, deps: 1,2,3)
 - [x] #202 - Teaching layer (deterministic, parameterized) (parallel: true, deps: 4)
 - [x] #203 - Typed data-access layer (getDeliveryMap) (parallel: true, deps: 1,4,5,6)
-- [ ] #204 - Delivery page — Page Spec + Claude Design prompt (parallel: true, deps: 4)
+- [x] #204 - Delivery page — Page Spec + Claude Design prompt (parallel: true, deps: 4)
 - [ ] #205 - Integrate the Delivery page into apps/web (parallel: false, deps: 7,8)
 
 Total tasks: 9
