@@ -2,8 +2,8 @@
 name: llm-observability
 status: in-progress
 created: 2026-06-02T18:22:30Z
-updated: 2026-06-03T14:08:04Z
-progress: 33%
+updated: 2026-06-03T14:30:01Z
+progress: 56%
 prd: .claude/prds/llm-observability.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/218
 ---
@@ -177,8 +177,8 @@ and Wave-2/3 overlap compress wall-clock.
 - [x] #219 - Observability schema + Drizzle migration (parallel: true)
 - [x] #220 - Deterministic per-model cost estimator (parallel: true)
 - [x] #221 - Repo observability analyzer (Part B detection) (parallel: true)
-- [ ] #222 - Recording LlmClient decorator + recordEval (parallel: true, deps: 1,2)
-- [ ] #223 - Part-B repo observability teaching (parallel: true, deps: 3)
+- [x] #222 - Recording LlmClient decorator + recordEval (parallel: true, deps: 1,2)
+- [x] #223 - Part-B repo observability teaching (parallel: true, deps: 3)
 - [ ] #224 - Instrument the M7/M9/M10 bounded calls (parallel: true, deps: 4)
 - [ ] #225 - Typed observability data-access layer (parallel: true, deps: 1,3,5)
 - [ ] #226 - Observability page — Page Spec + Claude Design prompt (parallel: true, deps: 7)
