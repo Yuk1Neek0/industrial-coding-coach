@@ -50,6 +50,7 @@ import { createLlmClient, type LlmClient, type LlmError } from "@workspace/ai"
 import type { CatalogDb } from "../client"
 import { getImportedRepo, listRepoFiles } from "../github/repos"
 import { getProjectMap } from "../mapper/project-maps"
+import { createObservedLlmClient, recordEval } from "../observability/record"
 import type {
   Challenge,
   ChallengeAcceptanceCriterion,
@@ -783,7 +784,19 @@ export async function generateChallenge(
     db,
   )
 
-  const client = input.client ?? createLlmClient()
+  // Observability (M13): record a trace + integrity eval when a db is
+  // available to write to. Best-effort and non-blocking — when `db` is omitted
+  // the call runs exactly as before (no wrapping, no trace). The cache-hit
+  // path above returns before here, so only real SDK calls are traced.
+  const baseClient = input.client ?? createLlmClient()
+  const observed = db
+    ? createObservedLlmClient(baseClient, {
+        traceName: "m9.generate-challenge",
+        snapshotId: snapshot.id,
+        db,
+      })
+    : null
+  const client = observed ?? baseClient
   const messages: Anthropic.MessageParam[] = [
     {
       role: "user",
@@ -881,6 +894,19 @@ export async function generateChallenge(
     projectMap,
   )
   if (!integrity.ok) {
+    if (observed) {
+      recordEval(
+        observed,
+        {
+          check: "challenge-integrity",
+          passed: false,
+          reason: `unresolved file references: ${integrity.unresolved
+            .map((u) => u.path)
+            .join(", ")}`,
+        },
+        db,
+      )
+    }
     throw new ChallengeIntegrityError(type, parsed, integrity)
   }
   const sourceRefIntegrity = verifyChallengeIntegrity(
@@ -888,6 +914,19 @@ export async function generateChallenge(
     projectMap,
   )
   if (!sourceRefIntegrity.ok) {
+    if (observed) {
+      recordEval(
+        observed,
+        {
+          check: "challenge-integrity",
+          passed: false,
+          reason: `unresolved source references: ${sourceRefIntegrity.unresolved
+            .map((u) => u.path)
+            .join(", ")}`,
+        },
+        db,
+      )
+    }
     // Re-label the unresolved entries as source-reference origins so the
     // caller's error message points at the right field.
     throw new ChallengeIntegrityError(type, parsed, {
@@ -897,6 +936,10 @@ export async function generateChallenge(
         origin: "acceptanceCriterion", // closest origin label in the union
       })),
     })
+  }
+
+  if (observed) {
+    recordEval(observed, { check: "challenge-integrity", passed: true }, db)
   }
 
   // 7. Persist (R2 cache write).

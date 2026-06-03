@@ -43,6 +43,8 @@
 import type Anthropic from "@anthropic-ai/sdk"
 import { createLlmClient, type LlmClient, type LlmError } from "@workspace/ai"
 
+import type { CatalogDb } from "../client"
+import { createObservedLlmClient } from "../observability/record"
 import type {
   LearningWeakArea,
   UnderstandingAnswer,
@@ -136,6 +138,18 @@ export interface GradeLearningUnitInput {
    * makes no live calls. Omitted → a real client built from `ANTHROPIC_API_KEY`.
    */
   client?: LlmClient
+  /**
+   * Imported snapshot id this grading runs against. Optional — when provided
+   * together with {@link GradeLearningUnitInput.db}, the bounded call records
+   * an M13 observability trace scoped to the snapshot. (Grading has no
+   * file/stack integrity check, so it records a trace but no eval.)
+   */
+  snapshotId?: number
+  /**
+   * Catalog DB for M13 observability writes. Optional and best-effort: when
+   * omitted the client is NOT wrapped and the call behaves exactly as before.
+   */
+  db?: CatalogDb
 }
 
 // --- Tool definition -------------------------------------------------------
@@ -428,7 +442,18 @@ export async function gradeLearningUnit(
     }
   }
 
-  const client = input.client ?? createLlmClient()
+  // Observability (M13): wrap the client to record a trace when a db is
+  // available. Best-effort and non-blocking — when `db` is omitted the call
+  // runs exactly as before (no wrapping, no trace). Grading has no file/stack
+  // integrity check, so it records a trace but no eval.
+  const baseClient = input.client ?? createLlmClient()
+  const client = input.db
+    ? createObservedLlmClient(baseClient, {
+        traceName: "m7.grade-unit",
+        snapshotId: input.snapshotId,
+        db: input.db,
+      })
+    : baseClient
   const messages: Anthropic.MessageParam[] = [
     { role: "user", content: buildGradingPrompt(input) },
   ]
