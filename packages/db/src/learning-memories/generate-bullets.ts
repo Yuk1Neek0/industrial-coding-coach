@@ -50,6 +50,7 @@ import type Anthropic from "@anthropic-ai/sdk"
 import { createLlmClient, type LlmClient, type LlmError } from "@workspace/ai"
 
 import type { CatalogDb } from "../client"
+import { createObservedLlmClient, recordEval } from "../observability/record"
 import type { ResumeBullet } from "../schema"
 import {
   checkArtifactIntegrity,
@@ -491,7 +492,18 @@ export async function generateResumeBullets(
   const db = options?.db
   const bundle = await loadSharedSourceBundle(snapshotId, db)
 
-  const client = options?.client ?? createLlmClient()
+  // Observability (M13): record a trace + integrity eval when a db is
+  // available to write to. Best-effort and non-blocking — when `db` is omitted
+  // the call runs exactly as before (no wrapping, no trace).
+  const baseClient = options?.client ?? createLlmClient()
+  const observed = db
+    ? createObservedLlmClient(baseClient, {
+        traceName: "m10.generate-bullets",
+        snapshotId,
+        db,
+      })
+    : null
+  const client = observed ?? baseClient
   const messages: Anthropic.MessageParam[] = [
     { role: "user", content: buildInitialPrompt(bundle) },
   ]
@@ -612,7 +624,27 @@ export async function generateResumeBullets(
     db,
   )
   if (!integrity.ok) {
+    if (observed) {
+      recordEval(
+        observed,
+        {
+          check: "resume-bullets-integrity",
+          passed: false,
+          reason:
+            "resume-bullet technologies/sourceFiles not grounded in the " +
+            "M5 stack / M6 key-file map",
+        },
+        db,
+      )
+    }
     throw new ResumeBulletsIntegrityError(parsed, integrity)
+  }
+  if (observed) {
+    recordEval(
+      observed,
+      { check: "resume-bullets-integrity", passed: true },
+      db,
+    )
   }
 
   // -------------------------------------------------------------------------
