@@ -1,9 +1,9 @@
 ---
 name: llm-observability
-status: backlog
+status: in-progress
 created: 2026-06-02T18:22:30Z
-updated: 2026-06-02T19:14:08Z
-progress: 0%
+updated: 2026-06-03T14:08:04Z
+progress: 33%
 prd: .claude/prds/llm-observability.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/218
 ---
@@ -174,9 +174,9 @@ layer, 1 Page Spec, 1 UI integration. No new external tooling. Critical paths:
 and Wave-2/3 overlap compress wall-clock.
 
 ## Tasks Created
-- [ ] #219 - Observability schema + Drizzle migration (parallel: true)
-- [ ] #220 - Deterministic per-model cost estimator (parallel: true)
-- [ ] #221 - Repo observability analyzer (Part B detection) (parallel: true)
+- [x] #219 - Observability schema + Drizzle migration (parallel: true)
+- [x] #220 - Deterministic per-model cost estimator (parallel: true)
+- [x] #221 - Repo observability analyzer (Part B detection) (parallel: true)
 - [ ] #222 - Recording LlmClient decorator + recordEval (parallel: true, deps: 1,2)
 - [ ] #223 - Part-B repo observability teaching (parallel: true, deps: 3)
 - [ ] #224 - Instrument the M7/M9/M10 bounded calls (parallel: true, deps: 4)
