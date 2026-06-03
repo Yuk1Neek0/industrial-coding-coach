@@ -11,6 +11,7 @@
     "./ccpm": "./src/ccpm/index.ts",
     "./stack": "./src/stack/index.ts",
     "./mapper": "./src/mapper/index.ts",
+    "./observability": "./src/observability/index.ts",
     "./learning-units": "./src/learning-units/index.ts",
     "./learning-memories": "./src/learning-memories/index.ts"
   },
