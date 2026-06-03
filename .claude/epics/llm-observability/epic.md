@@ -2,8 +2,8 @@
 name: llm-observability
 status: in-progress
 created: 2026-06-02T18:22:30Z
-updated: 2026-06-03T18:11:02Z
-progress: 78%
+updated: 2026-06-03T18:34:17Z
+progress: 89%
 prd: .claude/prds/llm-observability.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/218
 ---
@@ -181,7 +181,7 @@ and Wave-2/3 overlap compress wall-clock.
 - [x] #223 - Part-B repo observability teaching (parallel: true, deps: 3)
 - [x] #224 - Instrument the M7/M9/M10 bounded calls (parallel: true, deps: 4)
 - [x] #225 - Typed observability data-access layer (parallel: true, deps: 1,3,5)
-- [ ] #226 - Observability page — Page Spec + Claude Design prompt (parallel: true, deps: 7)
+- [x] #226 - Observability page — Page Spec + Claude Design prompt (parallel: true, deps: 7)
 - [ ] #227 - Integrate the Observability page into apps/web (parallel: false, deps: 7,8)
 
 Total tasks: 9
