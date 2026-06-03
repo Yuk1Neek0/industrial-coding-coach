@@ -7,6 +7,7 @@
 import {
   index,
   integer,
+  real,
   sqliteTable,
   text,
   uniqueIndex,
@@ -1369,3 +1370,156 @@ export type LearningMemory = typeof learningMemories.$inferSelect
 
 /** The shape required to insert a learning memory. */
 export type NewLearningMemory = typeof learningMemories.$inferInsert
+
+// ---------------------------------------------------------------------------
+// LLM observability — M13 LLM Observability (llm-observability PRD).
+//
+// Local-first, Langfuse-SHAPED storage for the bounded Anthropic SDK calls the
+// app makes (ADR 0009 — no external service, no Langfuse dependency; the schema
+// merely mirrors Langfuse's trace/observation/eval vocabulary). Two tables join
+// the same local SQLite store (ADR 0006) — new tables, not a new database:
+//
+//   - `llm_traces` — one row per logical bounded SDK call (e.g. an M10
+//                    `generate-qa` run). Holds the stable call `name`, the
+//                    model, aggregate token counts (input / output / cache
+//                    creation / cache read), the estimated USD cost, latency,
+//                    a free-text `outcome` (`success` or a failure kind — kept
+//                    as plain text, no CHECK/enum, so the migration needs no
+//                    special handling), the `startedAt` timestamp, and the
+//                    per-`complete()`-turn breakdown as a JSON `observations`
+//                    array. An optional `snapshotId` ties a trace to the repo
+//                    import it ran against (nullable — not every call is
+//                    snapshot-scoped); indexed for per-repo reads. Child of a
+//                    `repo_snapshots` row when set, deleted with its parent.
+//   - `llm_evals`  — zero-or-more per trace. One graded check on a trace's
+//                    output: the `check` name, whether it `passed`, and an
+//                    optional `reason`. Child of an `llm_traces` row, deleted
+//                    with its parent (ON DELETE CASCADE).
+//
+// The list-valued `observations` field is a JSON text column, mirroring the
+// `golden_paths` / `stack_explanations` convention.
+// ---------------------------------------------------------------------------
+
+/**
+ * The aggregate outcome of a bounded SDK call. Stored as FREE `text` (no
+ * CHECK/enum) so new failure kinds need no migration: `success` on a clean
+ * completion, otherwise a short failure-kind tag (e.g. `error`, `timeout`,
+ * `parse-error`, `aborted`).
+ */
+export type LlmTraceOutcome = string
+
+/**
+ * One `complete()`-turn's breakdown within a logical SDK call. A bounded call
+ * may issue several turns (tool use, continuation); each contributes its own
+ * model, token counts, and latency, and the parent `llm_traces` row carries
+ * the aggregate. Stored as a JSON array on the trace row.
+ */
+export interface LlmObservation {
+  /** The model used for this turn, e.g. `claude-opus-4-8`. */
+  model: string
+  /** Input (prompt) tokens consumed by this turn. */
+  inputTokens: number
+  /** Output (completion) tokens produced by this turn. */
+  outputTokens: number
+  /** Cache-creation (write) tokens for this turn, if any. */
+  cacheCreationTokens: number
+  /** Cache-read (hit) tokens for this turn, if any. */
+  cacheReadTokens: number
+  /** Wall-clock latency of this turn, in milliseconds. */
+  latencyMs: number
+  /** The turn's outcome — mirrors the trace `outcome` vocabulary. */
+  outcome: LlmTraceOutcome
+}
+
+/**
+ * One logical bounded Anthropic SDK call, recorded for local observability.
+ * Langfuse-shaped (trace → observations) but stored entirely in local SQLite.
+ * Aggregate token counts and cost roll up the per-turn `observations`.
+ */
+export const llmTraces = sqliteTable(
+  "llm_traces",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    /** Stable call name identifying the call site, e.g. `m10.generate-qa`. */
+    name: text("name").notNull(),
+    /**
+     * The imported repo snapshot this call ran against, if any. Nullable — not
+     * every call is snapshot-scoped. Deleted with its parent snapshot.
+     */
+    snapshotId: integer("snapshot_id").references(() => repoSnapshots.id, {
+      onDelete: "cascade",
+    }),
+    /** The primary model the call used, e.g. `claude-opus-4-8`. */
+    model: text("model").notNull(),
+    /** Aggregate input (prompt) tokens across all turns. */
+    inputTokens: integer("input_tokens").notNull(),
+    /** Aggregate output (completion) tokens across all turns. */
+    outputTokens: integer("output_tokens").notNull(),
+    /** Aggregate cache-creation (write) tokens across all turns. */
+    cacheCreationTokens: integer("cache_creation_tokens").notNull(),
+    /** Aggregate cache-read (hit) tokens across all turns. */
+    cacheReadTokens: integer("cache_read_tokens").notNull(),
+    /** Estimated cost of the call in USD, derived from token counts. */
+    estimatedCostUsd: real("estimated_cost_usd").notNull(),
+    /** Wall-clock latency of the whole call, in milliseconds. */
+    latencyMs: integer("latency_ms").notNull(),
+    /** The call's outcome — `success` or a failure kind (free text). */
+    outcome: text("outcome").$type<LlmTraceOutcome>().notNull(),
+    /** When the call started. */
+    startedAt: integer("started_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    /** Per-`complete()`-turn breakdown of the call. */
+    observations: text("observations", { mode: "json" })
+      .$type<LlmObservation[]>()
+      .notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    /** Fast lookup of every trace for a snapshot (per-repo observability reads). */
+    index("llm_traces_snapshot_idx").on(table.snapshotId),
+  ],
+)
+
+/** An LLM trace as read from the database. */
+export type LlmTrace = typeof llmTraces.$inferSelect
+
+/** The shape required to insert an LLM trace. */
+export type NewLlmTrace = typeof llmTraces.$inferInsert
+
+/**
+ * One graded check on a trace's output — zero-or-more per trace. A `check`
+ * names the assertion (e.g. `valid-json`, `cited-files-resolve`), `passed`
+ * records the result, and `reason` carries an optional explanation. Child of
+ * an `llm_traces` row, deleted with its parent.
+ */
+export const llmEvals = sqliteTable("llm_evals", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  /** The trace this eval was run against. */
+  traceId: integer("trace_id")
+    .notNull()
+    .references(() => llmTraces.id, { onDelete: "cascade" }),
+  /** The name of the check that was run, e.g. `valid-json`. */
+  check: text("check").notNull(),
+  /** Whether the check passed. */
+  passed: integer("passed", { mode: "boolean" }).notNull(),
+  /** Optional plain-language reason for the result; null when not given. */
+  reason: text("reason"),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+})
+
+/** An LLM eval as read from the database. */
+export type LlmEval = typeof llmEvals.$inferSelect
+
+/** The shape required to insert an LLM eval. */
+export type NewLlmEval = typeof llmEvals.$inferInsert
