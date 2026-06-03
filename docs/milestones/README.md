@@ -23,3 +23,4 @@ those plans.
 | M10 — Learning Memory and Portfolio Export | [`M10-learning-memory-portfolio-export.md`](M10-learning-memory-portfolio-export.md) | ✅ Complete |
 | M11 — GitHub Integration | [`M11-github-integration.md`](M11-github-integration.md) | ✅ Complete |
 | M12 — CCPM Integration | [`M12-ccpm-integration.md`](M12-ccpm-integration.md) | ✅ Complete |
+| M13 — LLM Observability | [`M13-llm-observability.md`](M13-llm-observability.md) | ✅ Complete |
