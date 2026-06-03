@@ -1,9 +1,9 @@
 ---
 name: llm-observability
-status: backlog
+status: completed
 created: 2026-06-02T18:22:30Z
-updated: 2026-06-02T19:14:08Z
-progress: 0%
+updated: 2026-06-03T19:16:54Z
+progress: 100%
 prd: .claude/prds/llm-observability.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/218
 ---
@@ -174,15 +174,15 @@ layer, 1 Page Spec, 1 UI integration. No new external tooling. Critical paths:
 and Wave-2/3 overlap compress wall-clock.
 
 ## Tasks Created
-- [ ] #219 - Observability schema + Drizzle migration (parallel: true)
-- [ ] #220 - Deterministic per-model cost estimator (parallel: true)
-- [ ] #221 - Repo observability analyzer (Part B detection) (parallel: true)
-- [ ] #222 - Recording LlmClient decorator + recordEval (parallel: true, deps: 1,2)
-- [ ] #223 - Part-B repo observability teaching (parallel: true, deps: 3)
-- [ ] #224 - Instrument the M7/M9/M10 bounded calls (parallel: true, deps: 4)
-- [ ] #225 - Typed observability data-access layer (parallel: true, deps: 1,3,5)
-- [ ] #226 - Observability page — Page Spec + Claude Design prompt (parallel: true, deps: 7)
-- [ ] #227 - Integrate the Observability page into apps/web (parallel: false, deps: 7,8)
+- [x] #219 - Observability schema + Drizzle migration (parallel: true)
+- [x] #220 - Deterministic per-model cost estimator (parallel: true)
+- [x] #221 - Repo observability analyzer (Part B detection) (parallel: true)
+- [x] #222 - Recording LlmClient decorator + recordEval (parallel: true, deps: 1,2)
+- [x] #223 - Part-B repo observability teaching (parallel: true, deps: 3)
+- [x] #224 - Instrument the M7/M9/M10 bounded calls (parallel: true, deps: 4)
+- [x] #225 - Typed observability data-access layer (parallel: true, deps: 1,3,5)
+- [x] #226 - Observability page — Page Spec + Claude Design prompt (parallel: true, deps: 7)
+- [x] #227 - Integrate the Observability page into apps/web (parallel: false, deps: 7,8)
 
 Total tasks: 9
 Parallel tasks: 8 (001–008 — gated by deps, conflict-free)

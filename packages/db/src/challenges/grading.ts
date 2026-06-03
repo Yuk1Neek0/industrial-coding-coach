@@ -60,6 +60,7 @@ import { createLlmClient, type LlmClient, type LlmError } from "@workspace/ai"
 
 import type { CatalogDb } from "../client"
 import { getProjectMap } from "../mapper/project-maps"
+import { createObservedLlmClient, recordEval } from "../observability/record"
 import type {
   Challenge,
   ChallengeAcceptanceCriterion,
@@ -575,7 +576,18 @@ export async function gradeChallenge(
   }
 
   // 3. Bounded SDK call — forced single submission, no tool loop.
-  const client = input.client ?? createLlmClient()
+  //    Observability (M13): record a trace + integrity eval when a db is
+  //    available. Best-effort and non-blocking — when `db` is omitted the call
+  //    runs exactly as before (no wrapping, no trace).
+  const baseClient = input.client ?? createLlmClient()
+  const observed = db
+    ? createObservedLlmClient(baseClient, {
+        traceName: "m9.grade-challenge",
+        snapshotId: challenge.snapshotId,
+        db,
+      })
+    : null
+  const client = observed ?? baseClient
   const messages: Anthropic.MessageParam[] = [
     {
       role: "user",
@@ -635,11 +647,31 @@ export async function gradeChallenge(
     projectMap,
   )
   if (!integrity.ok) {
+    if (observed) {
+      recordEval(
+        observed,
+        {
+          check: "challenge-grading-integrity",
+          passed: false,
+          reason: `unresolved file references: ${integrity.unresolved
+            .map((u) => u.path)
+            .join(", ")}`,
+        },
+        db,
+      )
+    }
     throw new ChallengeGradingIntegrityError(
       challenge.id,
       input.attempt.id,
       parsed,
       integrity,
+    )
+  }
+  if (observed) {
+    recordEval(
+      observed,
+      { check: "challenge-grading-integrity", passed: true },
+      db,
     )
   }
 

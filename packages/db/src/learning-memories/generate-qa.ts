@@ -48,6 +48,7 @@ import { createLlmClient, type LlmClient, type LlmError } from "@workspace/ai"
 
 import type { CatalogDb } from "../client"
 import { getDiffReview, listDiffReviews } from "../diff/reviews"
+import { createObservedLlmClient, recordEval } from "../observability/record"
 import type { DiffReview, InterviewQA } from "../schema"
 import { type IntegrityResult } from "./integrity"
 import {
@@ -553,7 +554,19 @@ export async function generateInterviewQA(
   const db = options?.db
   const bundle = await loadQASourceBundle(snapshotId, db)
 
-  const client = options?.client ?? createLlmClient()
+  // Observability (M13): record a trace + integrity eval when a db is
+  // available to write to. Best-effort and non-blocking — when `db` is omitted
+  // the call runs exactly as before (no wrapping, no trace). See
+  // `../observability/record`.
+  const baseClient = options?.client ?? createLlmClient()
+  const observed = db
+    ? createObservedLlmClient(baseClient, {
+        traceName: "m10.generate-qa",
+        snapshotId,
+        db,
+      })
+    : null
+  const client = observed ?? baseClient
   const messages: Anthropic.MessageParam[] = [
     { role: "user", content: buildInitialPrompt(bundle) },
   ]
@@ -652,6 +665,17 @@ export async function generateInterviewQA(
     }
   }
   if (missing.length > 0) {
+    if (observed) {
+      recordEval(
+        observed,
+        {
+          check: "interview-qa-integrity",
+          passed: false,
+          reason: `off-map/off-stack references: ${missing.join(", ")}`,
+        },
+        db,
+      )
+    }
     const failure: Extract<IntegrityResult, { ok: false }> = {
       ok: false,
       missing,
@@ -659,5 +683,12 @@ export async function generateInterviewQA(
     throw new InterviewQAIntegrityError(parsed, failure)
   }
 
+  if (observed) {
+    recordEval(
+      observed,
+      { check: "interview-qa-integrity", passed: true },
+      db,
+    )
+  }
   return parsed
 }

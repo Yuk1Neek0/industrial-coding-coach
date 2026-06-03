@@ -40,7 +40,9 @@
 import type Anthropic from "@anthropic-ai/sdk"
 import { createLlmClient, type LlmClient, type LlmError } from "@workspace/ai"
 
+import type { CatalogDb } from "../client"
 import type { LearningUnitInput } from "../github/issues"
+import { createObservedLlmClient, recordEval } from "../observability/record"
 import type {
   AgentExecutionStep,
   LearningConcept,
@@ -190,6 +192,20 @@ export interface GenerateLearningUnitInput {
    * `ANTHROPIC_API_KEY`.
    */
   client?: LlmClient
+  /**
+   * Imported snapshot id this unit is generated for. Optional — when provided
+   * together with {@link GenerateLearningUnitInput.db}, the bounded call
+   * records an M13 observability trace + integrity eval scoped to the snapshot.
+   * Omitted → unscoped (or, without `db`, no trace at all).
+   */
+  snapshotId?: number
+  /**
+   * Catalog DB for M13 observability writes. Optional and best-effort: when
+   * omitted the client is NOT wrapped and the call behaves exactly as before
+   * (no trace, no eval). When provided, a failed observability write is
+   * swallowed and never changes the call's result.
+   */
+  db?: CatalogDb
 }
 
 // --- Tool definitions ------------------------------------------------------
@@ -775,7 +791,18 @@ export async function generateLearningUnit(
   const projectMap = input.projectMap ?? null
   const fileTreeSet = blobPaths(input.snapshotFileTree)
 
-  const client = input.client ?? createLlmClient()
+  // Observability (M13): wrap the client to record a trace + integrity eval
+  // when a db is available. Best-effort and non-blocking — when `db` is omitted
+  // the call runs exactly as before (no wrapping, no trace).
+  const baseClient = input.client ?? createLlmClient()
+  const observed = input.db
+    ? createObservedLlmClient(baseClient, {
+        traceName: "m7.generate-unit",
+        snapshotId: input.snapshotId,
+        db: input.db,
+      })
+    : null
+  const client = observed ?? baseClient
   const messages: Anthropic.MessageParam[] = [
     {
       role: "user",
@@ -831,6 +858,17 @@ export async function generateLearningUnit(
         const missing = integrity.unresolved
           .filter((u) => u.kind === "related-file")
           .map((u) => u.value)
+        if (observed) {
+          recordEval(
+            observed,
+            {
+              check: "learning-unit-integrity",
+              passed: false,
+              reason: `unresolved related-file paths: ${missing.join(", ")}`,
+            },
+            input.db,
+          )
+        }
         return {
           ok: false,
           error: new IntegrityError(
@@ -841,6 +879,13 @@ export async function generateLearningUnit(
             content,
           ),
         }
+      }
+      if (observed) {
+        recordEval(
+          observed,
+          { check: "learning-unit-integrity", passed: true },
+          input.db,
+        )
       }
       return { ok: true, data: { content, integrity } }
     }
