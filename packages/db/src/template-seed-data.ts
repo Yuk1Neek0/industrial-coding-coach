@@ -11,7 +11,7 @@
 
 import type { NewTemplate } from "./schema"
 
-export const templateSeed: NewTemplate[] = [
+const curatedTemplates: NewTemplate[] = [
   {
     slug: "shadcn-ui-monorepo",
     name: "shadcn/ui Monorepo",
@@ -1197,3 +1197,11 @@ export const templateSeed: NewTemplate[] = [
     ],
   },
 ]
+
+// The 15 hand-authored entries are all curated provenance. Stamp `source`
+// explicitly here (the schema also defaults to `'curated'`) so the seed is
+// self-documenting and imported Backstage entries (M14) are clearly distinct.
+export const templateSeed: NewTemplate[] = curatedTemplates.map((template) => ({
+  ...template,
+  source: "curated" as const,
+}))
