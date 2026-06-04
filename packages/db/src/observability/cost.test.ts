@@ -30,6 +30,7 @@ function usage(
     cache_read_input_tokens: null,
     cache_creation: null,
     inference_geo: null,
+    output_tokens_details: null,
     server_tool_use: null,
     service_tier: null,
     ...partial,
