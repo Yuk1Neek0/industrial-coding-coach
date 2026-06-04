@@ -7,7 +7,11 @@
 // if any NOT-NULL registry field would be empty.
 
 import type { BackstageTemplate } from "./backstage-template"
-import type { TemplateEnrichment } from "./template-enrichment"
+import {
+  type BackstageFixture,
+  type TemplateEnrichment,
+  loadBackstageFixtures,
+} from "./template-enrichment"
 import type { NewTemplate, TemplateSource } from "./schema"
 
 /** The source format string stamped on imported rows. */
@@ -147,4 +151,17 @@ export function mapBackstageTemplate(
     sourceUrl,
     sourceFormat,
   }
+}
+
+/**
+ * Load a set of bundled fixtures (parse + validate via the enrichment loader)
+ * and map each to a registry row. The one-call path the seed uses to turn the
+ * in-repo Backstage fixtures into insertable `NewTemplate[]`. Deterministic.
+ */
+export function importBackstageTemplates(
+  fixtures: BackstageFixture[],
+): NewTemplate[] {
+  return loadBackstageFixtures(fixtures).map((fixture) =>
+    mapBackstageTemplate(fixture.template, fixture.enrichment),
+  )
 }
