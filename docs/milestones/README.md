@@ -24,3 +24,4 @@ those plans.
 | M11 — GitHub Integration | [`M11-github-integration.md`](M11-github-integration.md) | ✅ Complete |
 | M12 — CCPM Integration | [`M12-ccpm-integration.md`](M12-ccpm-integration.md) | ✅ Complete |
 | M13 — LLM Observability | [`M13-llm-observability.md`](M13-llm-observability.md) | ✅ Complete |
+| M14 — Backstage Template Import | [`M14-backstage-template-import.md`](M14-backstage-template-import.md) | ✅ Complete |

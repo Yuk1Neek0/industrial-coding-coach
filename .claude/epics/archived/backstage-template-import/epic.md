@@ -1,9 +1,9 @@
 ---
 name: backstage-template-import
-status: backlog
+status: completed
 created: 2026-06-04T14:09:57Z
 updated: 2026-06-04T14:41:59Z
-progress: 0%
+progress: 100%
 prd: .claude/prds/backstage-template-import.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/242
 ---
@@ -166,13 +166,13 @@ work but smaller in scope (extends rather than creates). Critical path:
 task 1 → task 4 → task 6; tasks 2, 3, 5, 7 parallelize off the critical path.
 
 ## Tasks Created
-- [ ] #243 - Provenance schema + migration + ADR (parallel: true)
-- [ ] #244 - Backstage template model + YAML parser (parallel: true)
-- [ ] #245 - Enrichment companion format + loader (parallel: true)
-- [ ] #246 - Deterministic Backstage-to-registry mapper (parallel: true; depends_on #243,#244,#245)
-- [ ] #247 - Bundled Backstage fixtures + reviewed enrichment (parallel: true; depends_on #244,#245)
-- [ ] #248 - Import + seed integration (parallel: true; depends_on #243,#246,#247)
-- [ ] #249 - Registry UI provenance affordance (parallel: true; depends_on #243)
+- [x] #243 - Provenance schema + migration + ADR (parallel: true)
+- [x] #244 - Backstage template model + YAML parser (parallel: true)
+- [x] #245 - Enrichment companion format + loader (parallel: true)
+- [x] #246 - Deterministic Backstage-to-registry mapper (parallel: true; depends_on #243,#244,#245)
+- [x] #247 - Bundled Backstage fixtures + reviewed enrichment (parallel: true; depends_on #244,#245)
+- [x] #248 - Import + seed integration (parallel: true; depends_on #243,#246,#247)
+- [x] #249 - Registry UI provenance affordance (parallel: true; depends_on #243)
 
 Total tasks: 7
 Parallel tasks: 7 (all parallelizable once dependencies are met)
