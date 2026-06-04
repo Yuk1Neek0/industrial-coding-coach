@@ -27,22 +27,22 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
-    "@types/react": "^19.2.15",
+    "@types/react": "^19.2.16",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.39.4",
-    "tsx": "^4.22.3",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.8"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.99.0",
+    "@anthropic-ai/sdk": "^0.100.1",
     "@react-pdf/renderer": "^4.5.1",
     "@workspace/ai": "workspace:*",
     "better-sqlite3": "^12.10.0",
     "drizzle-orm": "^0.45.2",
     "fflate": "^0.8.3",
-    "react": "^19.2.6"
+    "react": "^19.2.7"
   }
 }
