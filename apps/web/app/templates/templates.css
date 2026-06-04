@@ -488,6 +488,15 @@
   color: var(--accent-fg);
   border-color: transparent;
 }
+/* Provenance badge for imported (Backstage) templates. Links on the detail page. */
+a.badge-source {
+  text-decoration: none;
+  cursor: pointer;
+}
+a.badge-source:hover {
+  color: var(--fg);
+  border-color: var(--fg-muted);
+}
 
 /* ---------- Detail page ---------- */
 .back-link {
