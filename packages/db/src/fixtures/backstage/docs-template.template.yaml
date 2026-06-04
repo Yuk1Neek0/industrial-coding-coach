@@ -1,0 +1,60 @@
+# Backstage software template — adapted as an in-repo fixture for the M14 importer.
+# Source: backstage/software-templates (official), structure-faithful (trimmed).
+# https://github.com/backstage/software-templates/tree/main/scaffolder-templates/docs-template
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: docs-template
+  title: Documentation Template
+  description: Create a TechDocs documentation site backed by MkDocs.
+  tags:
+    - recommended
+    - docs
+    - techdocs
+  annotations:
+    backstage.io/source-location: url:https://github.com/backstage/software-templates/tree/main/scaffolder-templates/docs-template/
+spec:
+  owner: docs@backstage.io
+  type: documentation
+  parameters:
+    - title: Provide documentation information
+      required:
+        - component_id
+        - description
+        - owner
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component
+        description:
+          title: Description
+          type: string
+          description: A description for the documentation site
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+  steps:
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./skeleton
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        repoUrl: "{{ parameters.repoUrl }}"
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        catalogInfoPath: /catalog-info.yaml

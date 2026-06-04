@@ -1,0 +1,55 @@
+# Backstage software template — adapted as an in-repo fixture for the M14 importer.
+# Source: backstage/software-templates (official), structure-faithful (trimmed).
+# https://github.com/backstage/software-templates/tree/main/scaffolder-templates/react-ssr-template
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: react-ssr-template
+  title: React SSR Template
+  description: Create a website powered by Next.js with a CI pipeline.
+  tags:
+    - recommended
+    - react
+    - nextjs
+  annotations:
+    backstage.io/source-location: url:https://github.com/backstage/software-templates/tree/main/scaffolder-templates/react-ssr-template/
+spec:
+  owner: web@backstage.io
+  type: website
+  parameters:
+    - title: Provide some simple information
+      required:
+        - component_id
+        - owner
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+  steps:
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./skeleton
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        repoUrl: "{{ parameters.repoUrl }}"
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        catalogInfoPath: /catalog-info.yaml
