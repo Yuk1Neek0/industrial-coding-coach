@@ -10,7 +10,7 @@ import Link from "next/link"
 
 import type { Template } from "@workspace/db"
 
-import { AppNav, Badge } from "./chrome"
+import { AppNav, Badge, SourceBadge } from "./chrome"
 
 /**
  * Full detail view for one template.
@@ -38,6 +38,11 @@ export function TemplateDetailView({ template }: { template: Template }) {
             <p className="detail-lead">{template.summary}</p>
             <div className="detail-meta">
               <Badge>{template.category}</Badge>
+              <SourceBadge
+                source={template.source}
+                sourceUrl={template.sourceUrl}
+                asLink
+              />
               <span className="chip">
                 {template.fitFactors.length} fit factors
               </span>

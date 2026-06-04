@@ -3,7 +3,7 @@ import Link from "next/link"
 
 import type { Template } from "@workspace/db"
 
-import { Badge } from "./chrome"
+import { Badge, SourceBadge } from "./chrome"
 
 /**
  * A single template card in the registry grid — the whole card is one link.
@@ -24,6 +24,7 @@ export function TemplateCard({ template }: { template: Template }) {
       </span>
       <div className="card-meta">
         <Badge>{template.category}</Badge>
+        <SourceBadge source={template.source} sourceUrl={template.sourceUrl} />
       </div>
       <h2 className="card-title">{template.name}</h2>
       <p className="card-summary">{template.summary}</p>

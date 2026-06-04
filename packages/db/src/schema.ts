@@ -145,6 +145,19 @@ export const templates = sqliteTable("templates", {
   sources: text("sources", { mode: "json" })
     .$type<TemplateSource[]>()
     .notNull(),
+  /**
+   * Provenance — where this entry came from. `'curated'` is the hand-authored
+   * M3 registry; `'backstage'` is imported from a Backstage software template
+   * (M14). NOT NULL with a `'curated'` default so the migration backfills every
+   * existing row and curated callers need not set it.
+   */
+  source: text("source", { enum: ["curated", "backstage"] })
+    .notNull()
+    .default("curated"),
+  /** For imported entries, the URL of the upstream `template.yaml`. */
+  sourceUrl: text("source_url"),
+  /** For imported entries, the source format, e.g. `backstage/scaffolder.v1beta3`. */
+  sourceFormat: text("source_format"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),

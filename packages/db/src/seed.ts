@@ -2,14 +2,17 @@
 // Registry).
 //
 // Idempotent (drop-and-reload): runs migrations, clears each table, then
-// inserts the five Golden Paths from `seed-data.ts` and the 15 templates from
-// `template-seed-data.ts`. Safe to re-run. Invoke with the `db:seed` package
+// inserts the five Golden Paths from `seed-data.ts`, the 15 curated templates
+// from `template-seed-data.ts`, and the Backstage templates imported from the
+// in-repo fixtures (M14). Safe to re-run. Invoke with the `db:seed` package
 // script.
 
 import { migrate } from "drizzle-orm/better-sqlite3/migrator"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { backstageFixtures } from "./backstage-fixtures"
+import { importBackstageTemplates } from "./backstage-import"
 import { createCatalogDb, resolveDbFile } from "./client"
 import { goldenPaths, templates } from "./schema"
 import { goldenPathSeed } from "./seed-data"
@@ -29,12 +32,14 @@ function seed(): void {
   db.delete(goldenPaths).run()
   db.insert(goldenPaths).values(goldenPathSeed).run()
 
+  const imported = importBackstageTemplates(backstageFixtures)
   db.delete(templates).run()
-  db.insert(templates).values(templateSeed).run()
+  db.insert(templates).values([...templateSeed, ...imported]).run()
 
   console.log(
     `Seeded ${goldenPathSeed.length} Golden Paths and ` +
-      `${templateSeed.length} templates into ${dbFile}`,
+      `${templateSeed.length} curated + ${imported.length} imported ` +
+      `templates into ${dbFile}`,
   )
 }
 
