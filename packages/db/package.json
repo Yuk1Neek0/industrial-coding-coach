@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
-    "@types/react": "^19.2.16",
+    "@types/react": "^19.2.17",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "drizzle-kit": "^0.31.10",
@@ -37,7 +37,7 @@
     "vitest": "^4.1.8"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.100.1",
+    "@anthropic-ai/sdk": "^0.104.1",
     "@react-pdf/renderer": "^4.5.1",
     "@workspace/ai": "workspace:*",
     "better-sqlite3": "^12.10.0",
