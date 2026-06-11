@@ -1,17 +1,21 @@
 "use client"
 
 // The PR picker — the Client Component island for `/reviews/[owner]/[repo]`
-// (Diff Review page spec §4: "task #116 wires PR selection").
+// (Diff Review page spec §4: "task #116 wires PR selection"; the selectable
+// pull-request list was added by task #259).
 //
-// It collects a pull request number for an imported repository, runs the
-// bounded review call through the `createReviewAction` Server Action, and
-// navigates to the new review on success. It never touches the Anthropic SDK
-// or the GitHub client itself. Reviews already stored for the repo are listed
-// above the form so the user can revisit them.
+// On mount it lists the repository's open pull requests through the
+// `listOpenPullRequestsAction` Server Action so the user can pick one
+// directly; the number-entry form remains below it as the always-available
+// fallback (offline, rate-limited, repo not found, no open PRs). Either path
+// runs the bounded review call through the `createReviewAction` Server Action
+// and navigates to the new review on success. It never touches the Anthropic
+// SDK or the GitHub client itself. Reviews already stored for the repo are
+// listed above so the user can revisit them.
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import type { DiffReviewErrorKind, RepoIdentity, RepoReviewSummary } from "@/lib/diff-review"
 
@@ -23,12 +27,41 @@ import {
   IconHelp,
   IconKey,
   IconLoader,
+  IconSlash,
   IconSparkles,
 } from "../../../_components/chrome"
 import { relTime } from "../../../_components/util"
-import { createReviewAction } from "../actions"
+import {
+  createReviewAction,
+  listOpenPullRequestsAction,
+  type GitHubErrorKind,
+  type ListPullRequestsActionResult,
+  type PickerPullRequest,
+} from "../actions"
 
 type Status = "resting" | "in-progress" | "error"
+
+/** What the picker knows about the repo's open pull requests so far. */
+type PrListState =
+  | { phase: "loading" }
+  | { phase: "ready"; pullRequests: PickerPullRequest[]; truncated: boolean }
+  | { phase: "failed"; kind: GitHubErrorKind }
+
+/** A short, picker-sized notice for each way the PR listing can fail. */
+function listFailureNotice(kind: GitHubErrorKind): string {
+  switch (kind) {
+    case "network_error":
+      return "GitHub couldn't be reached to list pull requests"
+    case "rate_limited":
+      return "GitHub's API rate limit is exhausted right now"
+    case "not_found":
+      return "GitHub couldn't find this repository's pull requests"
+    case "auth_failed":
+      return "GitHub rejected the configured credentials"
+    default:
+      return "The pull request list couldn't be loaded"
+  }
+}
 
 interface ErrorCopy {
   icon: React.ReactNode
@@ -107,18 +140,50 @@ export function PrPicker({
   const [status, setStatus] = useState<Status>("resting")
   const [errorKind, setErrorKind] = useState<DiffReviewErrorKind | null>(null)
   const [prNumber, setPrNumber] = useState("")
+  const [prList, setPrList] = useState<PrListState>({ phase: "loading" })
 
   const busy = status === "in-progress"
 
-  async function submit(event: React.FormEvent) {
-    event.preventDefault()
-    if (busy) return
-    const parsed = Number(prNumber)
-    if (!Number.isInteger(parsed) || parsed <= 0) {
-      setErrorKind("missing-pr")
-      setStatus("error")
-      return
+  // List the repo's open pull requests once on mount. A failure only degrades
+  // the picker to the number-entry form — it never blocks the page.
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      let result: ListPullRequestsActionResult
+      try {
+        result = await listOpenPullRequestsAction({
+          owner: identity.owner,
+          repo: identity.repo,
+        })
+      } catch {
+        // The action round-trip itself failed — same degradation as a
+        // network error from GitHub.
+        result = {
+          ok: false,
+          error: {
+            kind: "network_error",
+            message: "Could not load the pull request list.",
+          },
+        }
+      }
+      if (cancelled) return
+      setPrList(
+        result.ok
+          ? {
+              phase: "ready",
+              pullRequests: result.pullRequests,
+              truncated: result.truncated,
+            }
+          : { phase: "failed", kind: result.error.kind },
+      )
+    })()
+    return () => {
+      cancelled = true
     }
+  }, [identity.owner, identity.repo])
+
+  /** Run the bounded review call for a PR number and navigate on success. */
+  async function startReview(parsed: number) {
     setStatus("in-progress")
     setErrorKind(null)
     const result = await createReviewAction({
@@ -133,6 +198,27 @@ export function PrPicker({
       setErrorKind(result.error.kind)
       setStatus("error")
     }
+  }
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault()
+    if (busy) return
+    const parsed = Number(prNumber)
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      setErrorKind("missing-pr")
+      setStatus("error")
+      return
+    }
+    await startReview(parsed)
+  }
+
+  /** Start a review from the selectable list — the same path as the form. */
+  function selectPullRequest(number: number) {
+    if (busy) return
+    // Reflect the selection in the number field so the busy / error states
+    // (and a retry) reference the right pull request.
+    setPrNumber(String(number))
+    void startReview(number)
   }
 
   return (
@@ -164,6 +250,90 @@ export function PrPicker({
           ))}
         </ul>
       )}
+
+      <section className="pr-form" aria-label="Open pull requests">
+        <div className="pr-form-head">
+          <GitHubMark size={16} />
+          <h2>Open pull requests</h2>
+        </div>
+        <p className="pr-form-desc">
+          The open pull requests on{" "}
+          <span className="code-chip">
+            {identity.owner}/{identity.repo}
+          </span>{" "}
+          — pick one to review it, or enter a number in the form below.
+        </p>
+
+        {prList.phase === "loading" && (
+          <p className="inline-note" aria-live="polite">
+            <IconLoader size={15} />
+            Loading open pull requests from GitHub…
+          </p>
+        )}
+
+        {prList.phase === "failed" && (
+          <p className="inline-note" role="status">
+            <IconAlert size={15} />
+            {listFailureNotice(prList.kind)} — enter a pull request number
+            below instead.
+          </p>
+        )}
+
+        {prList.phase === "ready" && prList.pullRequests.length === 0 && (
+          <p className="inline-empty">
+            <IconSlash size={15} />
+            No open pull requests on this repository. Enter a number below to
+            review a closed or merged one.
+          </p>
+        )}
+
+        {prList.phase === "ready" && prList.pullRequests.length > 0 && (
+          <>
+            <ul className="repo-list" style={{ marginTop: 16 }}>
+              {prList.pullRequests.map((pr) => (
+                <li key={pr.number}>
+                  <button
+                    type="button"
+                    className="repo-row"
+                    style={{ width: "100%", textAlign: "left" }}
+                    onClick={() => selectPullRequest(pr.number)}
+                    disabled={busy}
+                  >
+                    <span className="repo-icon" aria-hidden="true">
+                      <GitHubMark size={20} />
+                    </span>
+                    <div>
+                      <div className="repo-name">
+                        #{pr.number} · {pr.title}
+                      </div>
+                      <div className="repo-meta">
+                        <span
+                          className={`repo-state ${pr.state === "open" ? "has" : "no"}`}
+                        >
+                          {pr.state}
+                        </span>
+                        <span className="repo-state mono">
+                          updated {relTime(pr.updatedAt)}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="repo-cta" aria-hidden="true">
+                      <IconSparkles size={16} />
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {prList.truncated && (
+              <p className="inline-note" style={{ marginTop: 12 }}>
+                <IconAlert size={15} />
+                Showing the first {prList.pullRequests.length} open pull
+                requests — enter a number below for any other.
+              </p>
+            )}
+          </>
+        )}
+      </section>
 
       <form className="pr-form" onSubmit={(e) => void submit(e)}>
         <div className="pr-form-head">
