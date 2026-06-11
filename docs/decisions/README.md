@@ -17,3 +17,5 @@ ADRs record decisions that affect architecture, tooling, or workflow.
 | 0007 | UI generation tool: Claude Design | Accepted |
 | 0008 | Parallel execution model | Accepted |
 | 0009 | GitHub repository access (auth, rate limits, snapshot storage) | Accepted |
+| 0010 | Backstage template import contract & registry provenance | Accepted |
+| 0011 | Schema-collision discipline for parallel epics | Accepted |
