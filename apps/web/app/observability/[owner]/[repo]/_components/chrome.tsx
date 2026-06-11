@@ -1,12 +1,9 @@
 // Chrome for the M13 Observability Page (`/observability/[owner]/[repo]`,
-// task #227). Mirrors the M12 Delivery chrome (inline stroke SVGs, AppNav,
-// Badge) so the whole app reads as one product. Adds an "Observability" entry
-// to the primary nav, alongside the M12 "Delivery" entry. The unifying nav pass
-// across milestones remains an unscoped follow-up — until then each milestone's
-// chrome carries its own copy with its own active state (same note as the
-// M10/M11/M12 chrome).
-
-import Link from "next/link"
+// task #227). Mirrors the M12 Delivery chrome (inline stroke SVGs, Badge) so
+// the whole app reads as one product. The top app navigation bar is the
+// shared component (task #256) — the chrome re-exports it so existing page
+// imports keep working; observability pages highlight "repos".
+export { AppNav } from "@/app/_components/app-nav"
 
 type IconProps = {
   size?: number
@@ -125,89 +122,5 @@ export function Badge({
       {!soft && !tone && <span className="badge-dot" aria-hidden="true" />}
       {children}
     </span>
-  )
-}
-
-/** App nav — same shape as the M12 chrome, with an "Observability" entry added. */
-export function AppNav({
-  active,
-}: {
-  active?:
-    | "home"
-    | "catalog"
-    | "templates"
-    | "import"
-    | "stack"
-    | "reviews"
-    | "challenges"
-    | "portfolio"
-    | "delivery"
-    | "observability"
-}) {
-  return (
-    <nav className="nav" aria-label="Primary">
-      <div className="nav-brand">
-        <span className="mark" aria-hidden="true" />
-        <span>Coach</span>
-        <span className="mark-label">v0.8 · m13</span>
-      </div>
-      <div className="nav-links">
-        <Link href="/" className={active === "home" ? "active" : undefined}>
-          Home
-        </Link>
-        <Link
-          href="/catalog"
-          className={active === "catalog" ? "active" : undefined}
-        >
-          Catalog
-        </Link>
-        <Link
-          href="/templates"
-          className={active === "templates" ? "active" : undefined}
-        >
-          Templates
-        </Link>
-        <Link
-          href="/import"
-          className={active === "import" ? "active" : undefined}
-        >
-          Import
-        </Link>
-        <Link
-          href="/stack"
-          className={active === "stack" ? "active" : undefined}
-        >
-          Stack
-        </Link>
-        <Link
-          href="/reviews"
-          className={active === "reviews" ? "active" : undefined}
-        >
-          Reviews
-        </Link>
-        <Link
-          href="/import"
-          className={active === "portfolio" ? "active" : undefined}
-        >
-          Portfolio
-        </Link>
-        <Link
-          href="/import"
-          className={active === "delivery" ? "active" : undefined}
-        >
-          Delivery
-        </Link>
-        <Link
-          href="/import"
-          className={active === "observability" ? "active" : undefined}
-        >
-          Observability
-        </Link>
-      </div>
-      <div className="nav-end">
-        <span className="kbd">⌘K</span>
-        <span>Search</span>
-      </div>
-    </nav>
   )
 }

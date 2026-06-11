@@ -81,6 +81,22 @@ const prFilesBody = [
   },
 ]
 
+/** A two-entry pulls list page, the shape `GET .../pulls` returns. */
+const pullsListBody = [
+  {
+    number: 42,
+    title: "Add the diff review module",
+    state: "open",
+    updated_at: "2026-06-10T12:00:00Z",
+  },
+  {
+    number: 40,
+    title: "Fix the import path",
+    state: "open",
+    updated_at: "2026-06-09T08:30:00Z",
+  },
+]
+
 /** A linked issue with an Acceptance Criteria checklist. */
 const issueBody = {
   number: 41,
@@ -251,6 +267,95 @@ describe("client PR endpoints", () => {
     expect(r.ok).toBe(true)
     if (r.ok) {
       expect(r.data.files).toHaveLength(5)
+      expect(r.data.truncated).toBe(true)
+    }
+  })
+
+  it("listPullRequests fetches the pulls endpoint and maps the summaries", async () => {
+    const fetchImpl = mockFetch(makeResponse(pullsListBody))
+    const client = createGitHubClient({ fetchImpl })
+    const r = await client.listPullRequests(REPO)
+    expect(r.ok).toBe(true)
+    if (r.ok) {
+      expect(r.data.pullRequests).toEqual([
+        {
+          number: 42,
+          title: "Add the diff review module",
+          state: "open",
+          updatedAt: "2026-06-10T12:00:00Z",
+        },
+        {
+          number: 40,
+          title: "Fix the import path",
+          state: "open",
+          updatedAt: "2026-06-09T08:30:00Z",
+        },
+      ])
+      expect(r.data.truncated).toBe(false)
+    }
+    const [url] = (fetchImpl as unknown as ReturnType<typeof vi.fn>).mock
+      .calls[0]!
+    expect(String(url)).toContain(
+      "/repos/vercel/next.js/pulls?state=open&per_page=100&page=1",
+    )
+  })
+
+  it("listPullRequests passes the state option through", async () => {
+    const fetchImpl = mockFetch(makeResponse([]))
+    const client = createGitHubClient({ fetchImpl })
+    const r = await client.listPullRequests(REPO, { state: "all" })
+    expect(r.ok).toBe(true)
+    const [url] = (fetchImpl as unknown as ReturnType<typeof vi.fn>).mock
+      .calls[0]!
+    expect(String(url)).toContain("/repos/vercel/next.js/pulls?state=all")
+  })
+
+  it("listPullRequests maps a 404 to a typed not_found error", async () => {
+    const client = createGitHubClient({
+      fetchImpl: mockFetch(makeResponse({}, { status: 404 })),
+    })
+    const r = await client.listPullRequests(REPO)
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.error.kind).toBe("not_found")
+  })
+
+  it("listPullRequests paginates until a short page", async () => {
+    // Page 1: a full 100-entry page. Page 2: a short page that ends it.
+    const fullPage = Array.from({ length: 100 }, (_, i) => ({
+      number: i + 1,
+      title: `PR ${i + 1}`,
+      state: "open",
+      updated_at: "2026-06-10T12:00:00Z",
+    }))
+    const fetchImpl = mockFetch(
+      makeResponse(fullPage),
+      makeResponse([
+        { number: 101, title: "Last PR", state: "open", updated_at: "2026-06-10T12:00:00Z" },
+      ]),
+    )
+    const client = createGitHubClient({ fetchImpl })
+    const r = await client.listPullRequests(REPO)
+    expect(r.ok).toBe(true)
+    if (r.ok) {
+      expect(r.data.pullRequests).toHaveLength(101)
+      expect(r.data.truncated).toBe(false)
+    }
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
+  it("listPullRequests caps a very large repo and flags it truncated", async () => {
+    const bigPage = Array.from({ length: 100 }, (_, i) => ({
+      number: i + 1,
+      title: `PR ${i + 1}`,
+      state: "open",
+      updated_at: "2026-06-10T12:00:00Z",
+    }))
+    // Every page is full; the cap (5) stops the walk on the first page.
+    const client = createGitHubClient({ fetchImpl: mockFetch(makeResponse(bigPage)) })
+    const r = await client.listPullRequests(REPO, { maxPullRequests: 5 })
+    expect(r.ok).toBe(true)
+    if (r.ok) {
+      expect(r.data.pullRequests).toHaveLength(5)
       expect(r.data.truncated).toBe(true)
     }
   })

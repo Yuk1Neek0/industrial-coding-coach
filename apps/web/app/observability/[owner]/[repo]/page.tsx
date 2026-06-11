@@ -71,7 +71,7 @@ export default async function ObservabilityPage({
 
   return (
     <div className="screen">
-      <AppNav active="observability" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow">
           {/* ── Header (always) — §6a ──────────────────────────────── */}

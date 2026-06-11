@@ -143,8 +143,6 @@ const generatedContent: LearningUnitContent = {
     { id: "q1", prompt: "How does Next.js know this file is a route?" },
     { id: "q2", prompt: "What does Response.json do here?" },
   ],
-  challengeConcept: "fault-injection",
-  challengeType: "expand",
 }
 
 /** A fake bounded generation call that returns the canned unit content. */

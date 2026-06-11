@@ -1,9 +1,9 @@
-import Link from "next/link"
-
 // Shared chrome for the Stack Explainer pages (task #89). The icons replicate
 // the Claude Design handoff's inline SVGs verbatim, so the UI stays
 // pixel-faithful to the approved design rather than depending on a particular
-// lucide-react release. AppNav / Badge mirror the M11 / M3 page chrome.
+// lucide-react release. The top app navigation bar is the shared component
+// (task #256) — the chrome re-exports it so existing page imports keep working.
+export { AppNav } from "@/app/_components/app-nav"
 
 /** Props common to every stroke icon. */
 type IconProps = {
@@ -176,55 +176,5 @@ export function Badge({
       {!soft && <span className="badge-dot" aria-hidden="true" />}
       {children}
     </span>
-  )
-}
-
-/** Top app navigation bar — shared shape with the M2 / M3 / M11 chrome. */
-export function AppNav({
-  active,
-}: {
-  active?: "home" | "catalog" | "templates" | "import" | "stack"
-}) {
-  return (
-    <nav className="nav" aria-label="Primary">
-      <div className="nav-brand">
-        <span className="mark" aria-hidden="true" />
-        <span>Coach</span>
-        <span className="mark-label">v0.3 · m5</span>
-      </div>
-      <div className="nav-links">
-        <Link href="/" className={active === "home" ? "active" : undefined}>
-          Home
-        </Link>
-        <Link
-          href="/catalog"
-          className={active === "catalog" ? "active" : undefined}
-        >
-          Catalog
-        </Link>
-        <Link
-          href="/templates"
-          className={active === "templates" ? "active" : undefined}
-        >
-          Templates
-        </Link>
-        <Link
-          href="/import"
-          className={active === "import" ? "active" : undefined}
-        >
-          Import
-        </Link>
-        <Link
-          href="/stack"
-          className={active === "stack" ? "active" : undefined}
-        >
-          Stack
-        </Link>
-      </div>
-      <div className="nav-end">
-        <span className="kbd">⌘K</span>
-        <span>Search</span>
-      </div>
-    </nav>
   )
 }

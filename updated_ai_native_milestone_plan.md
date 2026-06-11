@@ -1009,6 +1009,13 @@ Import or map Backstage-style software templates into the Template Registry.
 ## M15: Team / Classroom Mode
 
 Allow instructors, mentors, or teams to assign Golden Paths and review understanding.
+(Shelved 2026-06-11 — deferred in favor of M16.)
+
+## M16: Integration & Polish
+
+Close the cross-feature gaps deferred by the M3–M14 retrospectives: unified app
+navigation, catalog→template cross-links, a real PR picker, dead-column
+cleanup, and the schema-collision discipline ADR.
 
 ---
 

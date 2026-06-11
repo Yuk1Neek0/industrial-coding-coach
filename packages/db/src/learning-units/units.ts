@@ -4,7 +4,7 @@
 // This is the single typed interface the M7 Issue-Based Learning Workspace
 // reads and writes learning units through. It covers create / read / update
 // keyed by imported-repo snapshot + input source + issue/task identifier (R1),
-// storing the seven generated outputs at generation time and the user's
+// storing the six generated outputs at generation time and the user's
 // answers, the per-attempt score, the weak-area breakdown, and the
 // review-checklist state on the same row as JSON columns (R2, FR-8). The
 // file-reference integrity check FR-4 requires lives next to this module in
@@ -49,7 +49,7 @@ function resolveDb(override?: CatalogDb): CatalogDb {
 }
 
 /**
- * The structured body of a learning unit — the seven generated outputs the M7
+ * The structured body of a learning unit — the six generated outputs the M7
  * generation call produces, without the snapshot key, the unit-identity
  * columns (`source` / `issueRef`), or the row's audit timestamps.
  *
@@ -69,10 +69,6 @@ export interface LearningUnitContent {
   reviewChecklist: ReviewChecklistItem[]
   /** Understanding questions the user must answer to demonstrate comprehension. */
   questions: UnderstandingQuestion[]
-  /** Minimal challenge concept stub — full schema lands in M9 (R3). */
-  challengeConcept: string | null
-  /** Minimal challenge type stub — full schema lands in M9 (R3). */
-  challengeType: string | null
 }
 
 /**
@@ -90,7 +86,7 @@ export interface LearningUnitIdentity {
 
 /**
  * The full create-time shape of a learning unit: the identity columns plus the
- * seven generated outputs. Mirrors the schema's `NewLearningUnit`, but with
+ * six generated outputs. Mirrors the schema's `NewLearningUnit`, but with
  * the JSON columns the user fills in (answers / score / weak areas /
  * checklist state) explicitly omitted — those start `null` and are populated
  * by {@link recordAnswers}, {@link recordScore}, and
@@ -204,7 +200,7 @@ export async function createLearningUnit(
  * by the integration layer when the question shape changes). Returns the
  * updated row, or `null` when no unit exists for that identity.
  *
- * `patch` accepts any subset of the seven generated outputs; only the
+ * `patch` accepts any subset of the six generated outputs; only the
  * supplied keys are written.
  */
 export async function updateLearningUnit(

@@ -180,8 +180,6 @@ async function seedLearningUnit(db: CatalogDb, snapshotId: number) {
         { id: "c1", description: "page.tsx renders the portfolio data." },
       ],
       questions: [{ id: "q1", prompt: "How does the page fetch data?" }],
-      challengeConcept: null,
-      challengeType: null,
     },
     db,
   )

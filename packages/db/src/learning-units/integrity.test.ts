@@ -108,8 +108,6 @@ const content: LearningUnitContent = {
   questions: [
     { id: "q1", prompt: "How does Next.js know this file is a route?" },
   ],
-  challengeConcept: "fault-injection",
-  challengeType: "expand",
 }
 
 /** A project map whose keyFileMap roles + architecture cover the concept names. */

@@ -1017,18 +1017,18 @@ export type NewChallengeAttempt = typeof challengeAttempts.$inferInsert
 //
 // One row per learning unit, keyed by repo identity (a `repo_snapshots` child)
 // plus the issue/task identifier and the input source (`github-issue` or
-// `ccpm-task`, per R1). A row holds the seven generated parts of the unit
+// `ccpm-task`, per R1). A row holds the six generated parts of the unit
 // (restated goal, related files, concepts, agent execution notes, review
-// checklist, understanding questions, and a minimal challenge stub per R3),
-// the user's answers to the understanding questions, the per-attempt score
-// with a weak-area breakdown, and the review-checklist state — all on the
-// single row as JSON columns (R2, FR-8). Joins the same local SQLite store
-// (ADR 0006) — a new table, not a new database. Mirrors `project_maps` (M6)
-// and `diff_reviews` (M8): JSON text columns for list-valued and
-// user-mutable fields; nullable columns are filled when the user submits
-// answers or ticks checklist items. No companion tables (R2). M9 will add
-// its full challenge schema in its own migration — M7 pre-allocates nothing
-// for M9 beyond the two stub columns (R3).
+// checklist, and understanding questions), the user's answers to the
+// understanding questions, the per-attempt score with a weak-area breakdown,
+// and the review-checklist state — all on the single row as JSON columns
+// (R2, FR-8). Joins the same local SQLite store (ADR 0006) — a new table,
+// not a new database. Mirrors `project_maps` (M6) and `diff_reviews` (M8):
+// JSON text columns for list-valued and user-mutable fields; nullable
+// columns are filled when the user submits answers or ticks checklist items.
+// No companion tables (R2). M9 owns the full challenge schema in its own
+// tables (`challenges` / `challenge_attempts`); the two M7 challenge stub
+// columns (R3) were dropped in migration 0013 (#260).
 // ---------------------------------------------------------------------------
 
 /** A file related to the learning unit, with the role it plays. */
@@ -1108,7 +1108,7 @@ export interface ChecklistItemState {
 
 /**
  * A learning unit produced by the M7 Issue-Based Learning Workspace for one
- * GitHub Issue (or CCPM task) on an imported snapshot. The seven generated
+ * GitHub Issue (or CCPM task) on an imported snapshot. The six generated
  * outputs are filled at generation time; `userAnswers`, `score`, `weakAreas`,
  * and `checklistState` stay null until the user submits answers / ticks
  * checklist items and the answers are graded.
@@ -1147,10 +1147,6 @@ export const learningUnits = sqliteTable(
     questions: text("questions", { mode: "json" })
       .$type<UnderstandingQuestion[]>()
       .notNull(),
-    /** Minimal challenge concept stub — full schema lands in M9 (R3). */
-    challengeConcept: text("challenge_concept"),
-    /** Minimal challenge type stub — full schema lands in M9 (R3). */
-    challengeType: text("challenge_type"),
     /** The user's answers; null until the understanding check is submitted. */
     userAnswers: text("user_answers", { mode: "json" }).$type<
       UnderstandingAnswer[]

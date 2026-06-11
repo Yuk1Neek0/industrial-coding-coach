@@ -69,7 +69,7 @@ export default async function PortfolioPage({ params }: PortfolioParams) {
 
   return (
     <div className="screen">
-      <AppNav active="portfolio" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow">
           {/* ── Header ─────────────────────────────────────────────── */}

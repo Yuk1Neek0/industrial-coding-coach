@@ -169,8 +169,6 @@ const learningUnitInput: NewLearningUnitInput = {
     { id: "rc-1", description: "Endpoint returns 200." },
   ],
   questions: [{ id: "q-1", prompt: "Why use a server action?" }],
-  challengeConcept: null,
-  challengeType: null,
 }
 
 const diffReviewContent: DiffReviewContent = {

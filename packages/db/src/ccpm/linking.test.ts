@@ -123,6 +123,7 @@ function makeClient(fixtures: Record<number, IssueFixture>): GitHubClient {
     getFileContent: unused,
     getPullRequest: unused,
     getPullRequestFiles: unused,
+    listPullRequests: unused,
     getLinkedIssueNumber: unused,
     listIssues: unused,
   }

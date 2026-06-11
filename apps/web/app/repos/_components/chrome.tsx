@@ -1,11 +1,10 @@
-import Link from "next/link"
-
 // Shared chrome for the M7 Issue Learning Workspace pages
 // (issue-based-learning-workspace epic, task #138). The icons are inline
 // stroke SVGs — the same approach the M5 / M8 pages use — so the UI stays
-// pixel-faithful regardless of the installed lucide-react release. AppNav /
-// Badge mirror the M5 / M3 / M8 page chrome so the whole app reads as one
-// product.
+// pixel-faithful regardless of the installed lucide-react release. The top
+// app navigation bar is the shared component (task #256) — the chrome
+// re-exports it so existing page imports keep working.
+export { AppNav } from "@/app/_components/app-nav"
 
 /** Props common to every stroke icon. */
 type IconProps = {
@@ -182,76 +181,6 @@ export function Badge({
       {!soft && !tone && <span className="badge-dot" aria-hidden="true" />}
       {children}
     </span>
-  )
-}
-
-/** Top app navigation bar — shared shape with the M2 / M3 / M5 / M8 chrome. */
-export function AppNav({
-  active,
-}: {
-  active?:
-    | "home"
-    | "catalog"
-    | "templates"
-    | "import"
-    | "stack"
-    | "reviews"
-    | "repos"
-    | "portfolio"
-}) {
-  return (
-    <nav className="nav" aria-label="Primary">
-      <div className="nav-brand">
-        <span className="mark" aria-hidden="true" />
-        <span>Coach</span>
-        <span className="mark-label">v0.5 · m7</span>
-      </div>
-      <div className="nav-links">
-        <Link href="/" className={active === "home" ? "active" : undefined}>
-          Home
-        </Link>
-        <Link
-          href="/catalog"
-          className={active === "catalog" ? "active" : undefined}
-        >
-          Catalog
-        </Link>
-        <Link
-          href="/templates"
-          className={active === "templates" ? "active" : undefined}
-        >
-          Templates
-        </Link>
-        <Link
-          href="/import"
-          className={active === "import" ? "active" : undefined}
-        >
-          Import
-        </Link>
-        <Link
-          href="/stack"
-          className={active === "stack" ? "active" : undefined}
-        >
-          Stack
-        </Link>
-        <Link
-          href="/reviews"
-          className={active === "reviews" ? "active" : undefined}
-        >
-          Reviews
-        </Link>
-        <Link
-          href="/import"
-          className={active === "portfolio" ? "active" : undefined}
-        >
-          Portfolio
-        </Link>
-      </div>
-      <div className="nav-end">
-        <span className="kbd">⌘K</span>
-        <span>Search</span>
-      </div>
-    </nav>
   )
 }
 

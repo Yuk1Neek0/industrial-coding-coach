@@ -1,11 +1,11 @@
 // Shared chrome for the M10 Portfolio Page (`/portfolio/[owner]/[repo]`,
 // task #184). Mirrors the M9 Challenge chrome at
 // `apps/web/app/repos/[owner]/[repo]/challenges/_components/chrome.tsx` so
-// the whole app reads as one product (inline stroke SVGs, AppNav, Badge,
-// AiLabel). Adds a "Portfolio" entry to the primary nav so the M10 surface
-// is reachable alongside Reviews (M8) and Challenges (M9).
-
-import Link from "next/link"
+// the whole app reads as one product (inline stroke SVGs, Badge, AiLabel).
+// The top app navigation bar is the shared component (task #256) — the
+// chrome re-exports it so existing page imports keep working; portfolio
+// pages highlight "repos".
+export { AppNav } from "@/app/_components/app-nav"
 
 type IconProps = {
   size?: number
@@ -140,87 +140,6 @@ export function Badge({
       {!soft && !tone && <span className="badge-dot" aria-hidden="true" />}
       {children}
     </span>
-  )
-}
-
-/**
- * App nav — same shape as the M9 chrome, with a "Portfolio" entry added.
- * The unifying nav pass across M7/M8/M9/M10 remains an unscoped follow-up
- * (called out in the integration notes and in PR #184) — until then each
- * milestone's chrome carries its own copy with its own active state.
- */
-export function AppNav({
-  active,
-}: {
-  active?:
-    | "home"
-    | "catalog"
-    | "templates"
-    | "import"
-    | "stack"
-    | "reviews"
-    | "challenges"
-    | "portfolio"
-}) {
-  return (
-    <nav className="nav" aria-label="Primary">
-      <div className="nav-brand">
-        <span className="mark" aria-hidden="true" />
-        <span>Coach</span>
-        <span className="mark-label">v0.6 · m10</span>
-      </div>
-      <div className="nav-links">
-        <Link href="/" className={active === "home" ? "active" : undefined}>
-          Home
-        </Link>
-        <Link
-          href="/catalog"
-          className={active === "catalog" ? "active" : undefined}
-        >
-          Catalog
-        </Link>
-        <Link
-          href="/templates"
-          className={active === "templates" ? "active" : undefined}
-        >
-          Templates
-        </Link>
-        <Link
-          href="/import"
-          className={active === "import" ? "active" : undefined}
-        >
-          Import
-        </Link>
-        <Link
-          href="/stack"
-          className={active === "stack" ? "active" : undefined}
-        >
-          Stack
-        </Link>
-        <Link
-          href="/reviews"
-          className={active === "reviews" ? "active" : undefined}
-        >
-          Reviews
-        </Link>
-        <Link
-          href="/import"
-          className={active === "challenges" ? "active" : undefined}
-        >
-          Challenges
-        </Link>
-        <Link
-          href="/import"
-          className={active === "portfolio" ? "active" : undefined}
-        >
-          Portfolio
-        </Link>
-      </div>
-      <div className="nav-end">
-        <span className="kbd">⌘K</span>
-        <span>Search</span>
-      </div>
-    </nav>
   )
 }
 

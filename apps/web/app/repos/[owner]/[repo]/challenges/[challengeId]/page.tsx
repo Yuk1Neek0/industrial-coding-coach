@@ -75,7 +75,7 @@ export default async function ChallengeDetailPage({ params }: DetailParams) {
 
   return (
     <div className="screen">
-      <AppNav active="challenges" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow">
           {/* ── Header ─────────────────────────────────────────────── */}

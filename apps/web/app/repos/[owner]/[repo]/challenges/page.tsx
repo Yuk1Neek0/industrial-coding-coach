@@ -47,7 +47,7 @@ export default async function ChallengeListPage({
   if (!data.snapshotExists || !data.identity) {
     return (
       <div className="screen">
-        <AppNav active="challenges" />
+        <AppNav active="repos" />
         <main className="page">
           <div className="container-narrow">
             <ChallengeListHeader owner={owner} repo={repo} />
@@ -84,7 +84,7 @@ export default async function ChallengeListPage({
   if (!data.projectMapExists) {
     return (
       <div className="screen">
-        <AppNav active="challenges" />
+        <AppNav active="repos" />
         <main className="page">
           <div className="container-narrow">
             <ChallengeListHeader
@@ -127,7 +127,7 @@ export default async function ChallengeListPage({
 
   return (
     <div className="screen">
-      <AppNav active="challenges" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow">
           <ChallengeListHeader

@@ -201,6 +201,7 @@ describe("importRepositoryWithLinks — import + link in one step", () => {
       getIssueTimeline: () => Promise.resolve(ok([])),
       getPullRequest: unused,
       getPullRequestFiles: unused,
+      listPullRequests: unused,
       getLinkedIssueNumber: unused,
       listIssues: unused,
     }

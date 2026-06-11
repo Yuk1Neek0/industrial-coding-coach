@@ -9,7 +9,7 @@ import { AppNav } from "./_components/chrome"
 export default function DeliveryLoading() {
   return (
     <div className="screen">
-      <AppNav active="delivery" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow" aria-busy="true">
           <div className="page-eyebrow" style={{ marginTop: 24 }} aria-hidden="true">

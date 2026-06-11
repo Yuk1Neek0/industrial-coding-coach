@@ -121,6 +121,30 @@ export interface PullRequestFileApiResponse {
   patch?: string
 }
 
+/** GitHub's REST shape for one entry of `GET /repos/{owner}/{repo}/pulls`. */
+export interface PullRequestListItemApiResponse {
+  number: number
+  title: string
+  /** `open` | `closed` as reported by GitHub's list endpoint. */
+  state: string
+  /** ISO 8601 timestamp of the pull request's last update. */
+  updated_at: string
+}
+
+/**
+ * One pull request in a {@link GitHubClient.listPullRequests} result — the
+ * summary a PR picker needs (Issue #258). Fetch the full metadata for a chosen
+ * PR with {@link GitHubClient.getPullRequest}.
+ */
+export interface PullRequestSummary {
+  number: number
+  title: string
+  /** `open` | `closed` as reported by GitHub. */
+  state: string
+  /** ISO 8601 timestamp of the pull request's last update. */
+  updatedAt: string
+}
+
 /** GitHub's REST shape for one entry of `GET .../issues/{number}/timeline`. */
 export interface TimelineEventApiResponse {
   event: string
@@ -375,6 +399,22 @@ export interface GitHubClient {
     maxFiles?: number,
   ): Promise<GitHubResult<{ files: PullRequestFileApiResponse[]; truncated: boolean }>>
   /**
+   * List a repository's pull requests, paginated. Returns one summary per PR
+   * (number, title, state, last update) so a picker can offer the repo's PRs
+   * instead of making the user type a number (Issue #258). Defaults to open
+   * pull requests.
+   *
+   * @param maxPullRequests - hard cap on pull requests fetched across pages so
+   *   a very large repository cannot run the client unbounded (ADR 0009 §2).
+   */
+  listPullRequests(
+    ref: RepoRef,
+    options?: {
+      state?: "open" | "closed" | "all"
+      maxPullRequests?: number
+    },
+  ): Promise<GitHubResult<{ pullRequests: PullRequestSummary[]; truncated: boolean }>>
+  /**
    * Fetch the issue number a pull request links to (the "Closes #N" / linked
    * issue), or `null` when the PR links no issue. Uses the issue timeline's
    * `cross-referenced` / `connected` events plus a body-keyword fallback.
@@ -420,6 +460,9 @@ const PR_FILES_PAGE_SIZE = 100
 /** Default page size for the issues list endpoint (GitHub's max is 100). */
 const ISSUES_PAGE_SIZE = 100
 
+/** Default page size for the pulls list endpoint (GitHub's max is 100). */
+const PULLS_PAGE_SIZE = 100
+
 /**
  * Default cap on the number of changed files fetched for one PR. A PR larger
  * than this is fetched up to the cap and flagged `truncated`, so the change
@@ -433,6 +476,13 @@ export const DEFAULT_MAX_PR_FILES = 300
  * the issues list stays bounded against the rate limit (ADR 0009 §2).
  */
 export const DEFAULT_MAX_ISSUES = 300
+
+/**
+ * Default cap on the number of pull requests fetched for one repository. A
+ * repo with more PRs than this is fetched up to the cap and flagged
+ * `truncated`, so the list stays bounded against the rate limit (ADR 0009 §2).
+ */
+export const DEFAULT_MAX_PULL_REQUESTS = 300
 
 /**
  * GitHub keywords that, followed by `#N` (or `owner/repo#N`), link a PR to an
@@ -678,6 +728,45 @@ export function createGitHubClient(
           return ok({ files: collected.slice(0, cap), truncated })
         }
         if (lastPage) return ok({ files: collected, truncated: false })
+        page += 1
+      }
+    },
+
+    async listPullRequests(ref, options = {}) {
+      const state = options.state ?? "open"
+      const cap = Math.max(
+        0,
+        options.maxPullRequests ?? DEFAULT_MAX_PULL_REQUESTS,
+      )
+      const collected: PullRequestSummary[] = []
+      let page = 1
+      // Walk pages until we hit the cap, a short (final) page, or an empty
+      // page — same bounded-pagination shape as `getPullRequestFiles`.
+      for (;;) {
+        const result = await getJson<PullRequestListItemApiResponse[]>(
+          `/repos/${encodeURIComponent(ref.owner)}/${encodeURIComponent(
+            ref.repo,
+          )}/pulls?state=${encodeURIComponent(
+            state,
+          )}&per_page=${PULLS_PAGE_SIZE}&page=${page}`,
+          `listing pull requests of ${ref.owner}/${ref.repo}`,
+        )
+        if (!result.ok) return result
+        const pagePulls = result.data
+        collected.push(
+          ...pagePulls.map((pr) => ({
+            number: pr.number,
+            title: pr.title,
+            state: pr.state,
+            updatedAt: pr.updated_at,
+          })),
+        )
+        const lastPage = pagePulls.length < PULLS_PAGE_SIZE
+        if (collected.length >= cap) {
+          const truncated = collected.length > cap || !lastPage
+          return ok({ pullRequests: collected.slice(0, cap), truncated })
+        }
+        if (lastPage) return ok({ pullRequests: collected, truncated: false })
         page += 1
       }
     },

@@ -10,7 +10,7 @@ import { AppNav, IconSlash } from "../_components/chrome"
 export default function ChallengeDetailNotFound() {
   return (
     <div className="screen">
-      <AppNav active="challenges" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow">
           <section className="status-region" role="alert">

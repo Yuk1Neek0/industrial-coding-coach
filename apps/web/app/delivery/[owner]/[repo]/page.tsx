@@ -61,7 +61,7 @@ export default async function DeliveryPage({ params }: DeliveryParams) {
 
   return (
     <div className="screen">
-      <AppNav active="delivery" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow">
           {/* ── Header (both states) ───────────────────────────────── */}
