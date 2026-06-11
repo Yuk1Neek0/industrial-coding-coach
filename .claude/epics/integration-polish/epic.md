@@ -3,7 +3,7 @@ name: integration-polish
 status: in-progress
 created: 2026-06-11T16:57:21Z
 updated: 2026-06-11T17:05:22Z
-progress: 0%
+progress: 100%
 prd: .claude/prds/integration-polish.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/255
 ---
@@ -82,12 +82,12 @@ worktree gotcha; CI on the PR is the final gate.
 
 ## Task Breakdown Preview
 
-- [ ] #256 — Shared AppNav component + adoption across all feature chromes (parallel)
-- [ ] #257 — Catalog detail template chips link to `/templates/[slug]` (parallel)
-- [ ] #258 — GitHub client `listPullRequests` + tests (parallel)
-- [ ] #259 — Reviews PR picker list UI over `listPullRequests` (after #258)
-- [ ] #260 — Drop M7 stub columns: migration 0013 + code/test prune (parallel)
-- [ ] #261 — ADR 0011: schema-collision discipline + epic-merge checklist (parallel)
+- [x] #256 — Shared AppNav component + adoption across all feature chromes (parallel)
+- [x] #257 — Catalog detail template chips link to `/templates/[slug]` (parallel)
+- [x] #258 — GitHub client `listPullRequests` + tests (parallel)
+- [x] #259 — Reviews PR picker list UI over `listPullRequests` (after #258)
+- [x] #260 — Drop M7 stub columns: migration 0013 + code/test prune (parallel)
+- [x] #261 — ADR 0011: schema-collision discipline + epic-merge checklist (parallel)
 
 ## Dependencies
 
@@ -115,12 +115,12 @@ Critical path: 003 → 004.
 
 ## Tasks Created
 
-- [ ] #256 — Shared AppNav component + adoption across feature chromes (parallel: true)
-- [ ] #257 — Link catalog template chips to template detail pages (parallel: true)
-- [ ] #258 — GitHub client listPullRequests with bounded pagination (parallel: true)
-- [ ] #259 — Reviews PR picker: selectable list with number-entry fallback (parallel: false, depends on #258)
-- [ ] #260 — Drop M7 stub columns from learning_units (migration 0013) (parallel: true)
-- [ ] #261 — ADR 0011: schema-collision discipline + epic-merge checklist (parallel: true)
+- [x] #256 — Shared AppNav component + adoption across feature chromes (parallel: true)
+- [x] #257 — Link catalog template chips to template detail pages (parallel: true)
+- [x] #258 — GitHub client listPullRequests with bounded pagination (parallel: true)
+- [x] #259 — Reviews PR picker: selectable list with number-entry fallback (parallel: false, depends on #258)
+- [x] #260 — Drop M7 stub columns from learning_units (migration 0013) (parallel: true)
+- [x] #261 — ADR 0011: schema-collision discipline + epic-merge checklist (parallel: true)
 
 Total tasks: 6
 Parallel tasks: 5
