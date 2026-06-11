@@ -3,7 +3,7 @@ name: repo-hub-file-viewer
 status: in-progress
 created: 2026-06-11T18:25:12Z
 updated: 2026-06-11T18:40:00Z
-progress: 0%
+progress: 100%
 prd: .claude/prds/repo-hub-file-viewer.md
 github: https://github.com/Yuk1Neek0/industrial-coding-coach/issues/264
 ---
@@ -79,12 +79,12 @@ Central verification in the main checkout; CI on the epic PR is the gate.
 
 ## Task Breakdown Preview
 
-- [ ] #265 — Page Spec: Repos Hub (parallel)
-- [ ] #266 — Page Spec: Snapshot File Viewer (parallel)
-- [ ] #267 — Implement /repos hub page (after #265)
-- [ ] #268 — Implement snapshot file viewer route (after #266)
-- [ ] #269 — Wire import success forward action (after #268)
-- [ ] #270 — Wire M5/M6 file references into the viewer (after #268)
+- [x] #265 — Page Spec: Repos Hub (parallel)
+- [x] #266 — Page Spec: Snapshot File Viewer (parallel)
+- [x] #267 — Implement /repos hub page (after #265)
+- [x] #268 — Implement snapshot file viewer route (after #266)
+- [x] #269 — Wire import success forward action (after #268)
+- [x] #270 — Wire M5/M6 file references into the viewer (after #268)
 
 ## Dependencies
 
