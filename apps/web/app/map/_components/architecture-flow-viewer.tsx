@@ -15,6 +15,7 @@
 // applicable" state is the pipeline's explicit single-step placeholder
 // (`detectAiIntegration` false → one step whose text begins "Not applicable").
 
+import Link from "next/link"
 import { useState } from "react"
 
 import type { ProjectMapView } from "@/lib/project-mapper"
@@ -23,6 +24,11 @@ import { IconRoute } from "./chrome"
 import { MermaidDiagram } from "./mermaid-diagram"
 
 type FlowStep = ProjectMapView["requestDataFlow"][number]
+
+/** Deep link into the snapshot file viewer (#268 URL contract, spec §4a). */
+function viewerHref(owner: string, repo: string, path: string): string {
+  return `/repos/${owner}/${repo}/files?path=${encodeURIComponent(path)}`
+}
 
 interface FlowTab {
   id: string
@@ -40,7 +46,15 @@ function isNotApplicable(steps: FlowStep[]): boolean {
 }
 
 /** One flow's ordered step list — the authoritative, accessible representation. */
-function FlowSteps({ steps }: { steps: FlowStep[] }) {
+function FlowSteps({
+  owner,
+  repo,
+  steps,
+}: {
+  owner: string
+  repo: string
+  steps: FlowStep[]
+}) {
   if (steps.length === 0) {
     return (
       <p className="flow-empty">
@@ -58,7 +72,12 @@ function FlowSteps({ steps }: { steps: FlowStep[] }) {
           <div>
             <span className="flow-step-desc">{step.description}</span>
             {step.path && (
-              <code className="flow-step-path">{step.path}</code>
+              <Link
+                className="flow-step-path"
+                href={viewerHref(owner, repo, step.path)}
+              >
+                {step.path}
+              </Link>
             )}
           </div>
         </li>
@@ -71,17 +90,23 @@ function FlowSteps({ steps }: { steps: FlowStep[] }) {
  * Render the request/data, state, and AI-call flows as tabbed panels, with the
  * pipeline's Mermaid diagram rendered client-side above them.
  *
+ * @param owner - the snapshot's repo owner, for file-viewer links.
+ * @param repo - the snapshot's repo name, for file-viewer links.
  * @param mermaidDiagram - the pipeline's Mermaid diagram source (Output 6).
  * @param requestDataFlow - the request/data flow steps (Output 3).
  * @param stateFlow - the state flow steps (Output 4).
  * @param aiCallFlow - the AI-call flow steps (Output 5).
  */
 export function ArchitectureFlowViewer({
+  owner,
+  repo,
   mermaidDiagram,
   requestDataFlow,
   stateFlow,
   aiCallFlow,
 }: {
+  owner: string
+  repo: string
   mermaidDiagram: string
   requestDataFlow: FlowStep[]
   stateFlow: FlowStep[]
@@ -156,7 +181,7 @@ export function ArchitectureFlowViewer({
             </p>
           </div>
         ) : (
-          <FlowSteps steps={current.steps} />
+          <FlowSteps owner={owner} repo={repo} steps={current.steps} />
         )}
       </div>
     </div>

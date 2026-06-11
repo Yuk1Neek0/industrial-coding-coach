@@ -15,7 +15,7 @@
 // Style mirrors the M2 catalog data-access module (`../catalog.ts`): small,
 // fully typed functions, an injectable `CatalogDb`, `null` for a clean miss.
 
-import { and, desc, eq } from "drizzle-orm"
+import { and, count, desc, eq } from "drizzle-orm"
 
 import { createCatalogDb, type CatalogDb } from "../client"
 import {
@@ -202,6 +202,27 @@ export async function listRepoFiles(
     .where(eq(repoFiles.snapshotId, snapshot.id))
     .orderBy(repoFiles.path)
     .all()
+}
+
+/**
+ * Count the captured key files (`repo_files` rows) of every snapshot, keyed by
+ * snapshot id — the Repos Hub's "{n} key files captured" read (M17, epic
+ * AD-1).
+ *
+ * One grouped `count(*)` over `repo_files`; file contents are never loaded.
+ * Snapshots with no captured key files are simply absent from the map, so
+ * callers default to `0` with `counts.get(id) ?? 0`. Read-only — no schema
+ * change, no migration.
+ */
+export async function countRepoFilesBySnapshot(
+  db?: CatalogDb,
+): Promise<Map<number, number>> {
+  const rows = resolveDb(db)
+    .select({ snapshotId: repoFiles.snapshotId, files: count() })
+    .from(repoFiles)
+    .groupBy(repoFiles.snapshotId)
+    .all()
+  return new Map(rows.map((row) => [row.snapshotId, row.files]))
 }
 
 /**

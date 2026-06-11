@@ -9,9 +9,11 @@ import {
   AlertTriangle,
   CheckCircle2,
   FileText,
+  FolderOpen,
   Loader2,
   RefreshCw,
 } from "lucide-react"
+import Link from "next/link"
 import { useId, useState } from "react"
 
 import type { ImportErrorView, ImportSuccessView } from "@/lib/github-import"
@@ -302,7 +304,13 @@ function InProgress({ pending }: { pending: PendingImport }) {
   )
 }
 
-/** Success result view — the imported snapshot summary and captured files. */
+/**
+ * Success result view — the imported snapshot summary and captured files,
+ * with forward links into the snapshot file viewer (`/repos/[owner]/[repo]/
+ * files`, URL contract per the viewer page spec §4a: repo-relative `?path=`
+ * encoded whole with `encodeURIComponent`, no `?ref=` — the viewer always
+ * shows the most recent snapshot).
+ */
 function SuccessView({
   result,
   onImportAnother,
@@ -311,6 +319,7 @@ function SuccessView({
   onImportAnother: () => void
 }) {
   const refIsDefault = result.ref === result.defaultBranch
+  const filesHref = `/repos/${result.owner}/${result.repo}/files`
   return (
     <div className="status-card">
       <div className="status-head">
@@ -359,7 +368,12 @@ function SuccessView({
               <span className="keyfile-icon" aria-hidden="true">
                 <FileText size={14} />
               </span>
-              <span className="keyfile-path">{file.path}</span>
+              <Link
+                className="keyfile-path keyfile-link"
+                href={`${filesHref}?path=${encodeURIComponent(file.path)}`}
+              >
+                {file.path}
+              </Link>
               <span className="keyfile-size">{formatBytes(file.bytes)}</span>
             </li>
           ))}
@@ -372,6 +386,10 @@ function SuccessView({
       )}
 
       <div className="status-actions">
+        <Link className="btn btn-primary btn-lg" href={filesHref}>
+          <FolderOpen size={14} aria-hidden="true" />
+          Browse the snapshot
+        </Link>
         <button type="button" className="btn btn-lg" onClick={onImportAnother}>
           <RefreshCw size={14} aria-hidden="true" />
           Import another repository

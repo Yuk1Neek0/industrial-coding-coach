@@ -868,6 +868,10 @@
   overflow-wrap: anywhere;
   padding-top: 1px;
 }
+a.fileref-path:hover {
+  color: var(--accent-fg);
+  text-decoration: underline;
+}
 .fileref-reason {
   font-size: 14px;
   color: var(--fg-muted);

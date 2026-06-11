@@ -12,6 +12,7 @@
 // adaptation the M5 Stack Explainer made for its missing `category` field.
 // The path search is kept; it is the filter the real shape supports.
 
+import Link from "next/link"
 import { useMemo, useState } from "react"
 
 import type { ProjectMapView } from "@/lib/project-mapper"
@@ -20,12 +21,27 @@ import { IconBox, IconFileCode } from "./chrome"
 
 type KeyFile = ProjectMapView["keyFileMap"][number]
 
+/** Deep link into the snapshot file viewer (#268 URL contract, spec §4a). */
+function viewerHref(owner: string, repo: string, path: string): string {
+  return `/repos/${owner}/${repo}/files?path=${encodeURIComponent(path)}`
+}
+
 /**
  * Render the key-file map with a client-side path search.
  *
+ * @param owner - the snapshot's repo owner, for file-viewer links.
+ * @param repo - the snapshot's repo name, for file-viewer links.
  * @param keyFiles - the pipeline's key-file map (pipeline Output 2).
  */
-export function FileMapExplorer({ keyFiles }: { keyFiles: KeyFile[] }) {
+export function FileMapExplorer({
+  owner,
+  repo,
+  keyFiles,
+}: {
+  owner: string
+  repo: string
+  keyFiles: KeyFile[]
+}) {
   const [query, setQuery] = useState("")
 
   const filtered = useMemo(() => {
@@ -86,7 +102,12 @@ export function FileMapExplorer({ keyFiles }: { keyFiles: KeyFile[] }) {
               <span className="fileref-icon" aria-hidden="true">
                 <IconFileCode size={14} />
               </span>
-              <code className="fileref-path">{f.path}</code>
+              <Link
+                className="fileref-path"
+                href={viewerHref(owner, repo, f.path)}
+              >
+                {f.path}
+              </Link>
               <p className="fileref-reason">{f.role}</p>
             </li>
           ))}

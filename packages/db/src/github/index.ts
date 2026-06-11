@@ -71,6 +71,7 @@ export {
   getImportedRepoById,
   getRepoTree,
   listRepoFiles,
+  countRepoFilesBySnapshot,
   getRepoFile,
   type ImportRepositoryInput,
 } from "./repos"

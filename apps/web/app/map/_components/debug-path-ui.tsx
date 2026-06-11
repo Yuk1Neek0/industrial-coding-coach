@@ -8,19 +8,48 @@
 // not in the real schema — `location` (a real repo path or a named area) is
 // the "Start here" anchor and `guidance` is the body of each entry.
 
+import Link from "next/link"
+
 import type { ProjectMapView } from "@/lib/project-mapper"
 
 import { IconBug } from "./chrome"
 
 type DebugStep = ProjectMapView["debugPath"][number]
 
+/** Deep link into the snapshot file viewer (#268 URL contract, spec §4a). */
+function viewerHref(owner: string, repo: string, path: string): string {
+  return `/repos/${owner}/${repo}/files?path=${encodeURIComponent(path)}`
+}
+
+/**
+ * Whether a debug `location` is a concrete repo path rather than a named area
+ * (the field holds either). Only concrete paths become viewer links (epic
+ * AD-5): no whitespace, no glob/backtick characters, and either a `/` or a
+ * dotted file name. The viewer's graceful unknown-path state backstops any
+ * path that still doesn't resolve.
+ */
+function isRepoPath(location: string): boolean {
+  if (/[\s*`]/.test(location)) return false
+  return location.includes("/") || /\.[\w-]+$/.test(location)
+}
+
 /**
  * Render the debug path — an ordered list of places to look first when
  * something breaks (pipeline Output 7).
  *
+ * @param owner - the snapshot's repo owner, for file-viewer links.
+ * @param repo - the snapshot's repo name, for file-viewer links.
  * @param debugPath - the pipeline's debug-path steps.
  */
-export function DebugPathUi({ debugPath }: { debugPath: DebugStep[] }) {
+export function DebugPathUi({
+  owner,
+  repo,
+  debugPath,
+}: {
+  owner: string
+  repo: string
+  debugPath: DebugStep[]
+}) {
   if (debugPath.length === 0) {
     return (
       <p className="inline-empty">
@@ -46,7 +75,16 @@ export function DebugPathUi({ debugPath }: { debugPath: DebugStep[] }) {
                 </span>
                 <span className="debug-start">
                   <span className="debug-start-label">Start here:</span>
-                  <code className="debug-start-loc">{step.location}</code>
+                  {isRepoPath(step.location) ? (
+                    <Link
+                      className="debug-start-loc"
+                      href={viewerHref(owner, repo, step.location)}
+                    >
+                      {step.location}
+                    </Link>
+                  ) : (
+                    <code className="debug-start-loc">{step.location}</code>
+                  )}
                 </span>
               </h3>
               <p className="debug-guidance">{step.guidance}</p>
