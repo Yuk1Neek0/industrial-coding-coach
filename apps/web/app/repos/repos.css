@@ -963,3 +963,286 @@
   border-color: var(--ring);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 25%, transparent);
 }
+
+/* ---------- M17 Snapshot File Viewer (task #268) ----------
+ * Styles for /repos/[owner]/[repo]/files — page spec
+ * docs/design/snapshot-file-viewer.page-spec.md §6. Additive only, kept as
+ * ONE block at the end of the file to minimize merge friction with the M17
+ * hub additions (#267). All new selectors are `files-`-prefixed.
+ */
+
+/* Wider container than .container-narrow — 880px is tight for code (§6). */
+.files-container {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+/* Header (§6a) */
+.files-titlewrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.files-gh-link {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.files-gh-link:hover {
+  color: var(--fg);
+}
+.files-meta {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.files-note {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+/* Two panes (§6): fixed-width tree left, flexible file pane; stacked when
+ * narrow. DOM order is tree → file in both layouts. */
+.files-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  margin-top: 28px;
+}
+@media (max-width: 960px) {
+  .files-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Tree pane (§6b) */
+.files-tree {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elev);
+  padding: 12px;
+  min-width: 0;
+}
+.files-tree-banner {
+  font-size: 12px;
+  color: var(--fg-muted);
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-muted);
+  margin-bottom: 10px;
+}
+.files-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.files-group {
+  margin-top: 4px;
+}
+.files-group > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+.files-group > summary:hover {
+  background: var(--bg-muted);
+}
+.files-group-count {
+  color: var(--fg-subtle);
+  font-size: 11.5px;
+}
+.files-group .files-entry-list {
+  padding: 2px 0 6px 14px;
+}
+.files-entry-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+.files-entry-link:hover {
+  background: var(--bg-muted);
+}
+.files-entry-path {
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1;
+}
+/* Non-captured entries: muted but clickable; the captured distinction is
+ * carried by the badge text, never opacity alone (§13). */
+.files-entry-muted .files-entry-path {
+  color: var(--fg-muted);
+}
+.files-entry-size {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+.files-entry .badge {
+  font-size: 10px;
+  padding: 1px 7px;
+}
+/* Selected entry: a visible marker beyond color (§13). */
+.files-entry-link[aria-current="true"] {
+  background: var(--accent-soft);
+}
+.files-entry-link[aria-current="true"]::before {
+  content: "▸";
+  color: var(--accent-fg);
+  font-size: 11px;
+  line-height: 1;
+}
+.files-entry-more,
+.files-group-unlisted {
+  font-size: 12px;
+  color: var(--fg-subtle);
+  padding: 4px 8px;
+}
+.files-group-unlisted {
+  margin-top: 4px;
+}
+
+/* File pane (§6c) */
+.files-pane {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elev);
+  padding: 24px 28px;
+  min-width: 0;
+}
+.files-pane-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.files-pane-title {
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+.files-pane-meta {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+.files-pane-note {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.files-pane-status {
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.files-pane-body {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--fg-muted);
+  max-width: 70ch;
+  line-height: 1.6;
+}
+.files-pane-body a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.files-actions {
+  margin-top: 18px;
+}
+
+/* Captured contents (§6c-i): plain monospace, long lines scroll
+ * horizontally; the block scrolls vertically with the page. */
+.files-pre {
+  margin: 18px 0 0;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-muted);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre;
+  tab-size: 2;
+}
+.files-pre:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Default state (§6c-iv): snapshot summary + captured quick list */
+.files-summary-card {
+  margin-top: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  padding: 16px 18px;
+}
+.files-summary-desc {
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.files-summary-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 18px;
+  margin: 0;
+  font-size: 13px;
+}
+.files-summary-grid dt {
+  color: var(--fg-subtle);
+}
+.files-summary-grid dd {
+  margin: 0;
+}
+.files-quick {
+  margin-top: 22px;
+}
+.files-quick-title {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  margin-bottom: 10px;
+}
+.files-quick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.files-quick-list a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: 12.5px;
+}
+.files-quick-list a:hover {
+  border-color: var(--border-strong);
+}
+.files-quick-more {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
