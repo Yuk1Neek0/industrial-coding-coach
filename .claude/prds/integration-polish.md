@@ -1,7 +1,7 @@
 ---
 name: integration-polish
 description: Cross-feature integration & polish — unified app navigation, catalog→template cross-links, a real PR picker, dead-column cleanup, and schema-collision discipline
-status: backlog
+status: completed
 created: 2026-06-11T16:57:21Z
 ---
 
