@@ -17,7 +17,7 @@ export default function ChallengeListError({
 }) {
   return (
     <div className="screen">
-      <AppNav active="challenges" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow">
           <section className="status-region" role="alert">

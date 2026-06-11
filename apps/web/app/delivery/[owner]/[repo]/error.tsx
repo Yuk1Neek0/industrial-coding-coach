@@ -17,7 +17,7 @@ export default function DeliveryError({
 }) {
   return (
     <div className="screen">
-      <AppNav active="delivery" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow">
           <section className="status-region" role="alert">

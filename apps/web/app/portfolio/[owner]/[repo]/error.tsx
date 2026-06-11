@@ -18,7 +18,7 @@ export default function PortfolioError({
 }) {
   return (
     <div className="screen">
-      <AppNav active="portfolio" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow">
           <section className="status-region" role="alert">

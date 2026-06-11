@@ -1,4 +1,6 @@
-import Link from "next/link"
+// The top app navigation bar is the shared component (task #256) — the
+// chrome re-exports it so existing page imports keep working.
+export { AppNav } from "@/app/_components/app-nav"
 
 /**
  * The GitHub logo mark as an inline SVG. lucide-react no longer ships brand
@@ -36,45 +38,5 @@ export function Badge({
       {!soft && <span className="badge-dot" aria-hidden="true" />}
       {children}
     </span>
-  )
-}
-
-/** Top app navigation bar — shared shape with the M2 Catalog chrome. */
-export function AppNav({
-  active,
-}: {
-  active?: "home" | "catalog" | "import"
-}) {
-  return (
-    <nav className="nav" aria-label="Primary">
-      <div className="nav-brand">
-        <span className="mark" aria-hidden="true" />
-        <span>Coach</span>
-        <span className="mark-label">v0.2 · m11</span>
-      </div>
-      <div className="nav-links">
-        <Link href="/" className={active === "home" ? "active" : undefined}>
-          Home
-        </Link>
-        <Link
-          href="/catalog"
-          className={active === "catalog" ? "active" : undefined}
-        >
-          Catalog
-        </Link>
-        <Link
-          href="/import"
-          className={active === "import" ? "active" : undefined}
-        >
-          Import
-        </Link>
-        <a href="#">Templates</a>
-        <a href="#">Sessions</a>
-      </div>
-      <div className="nav-end">
-        <span className="kbd">⌘K</span>
-        <span>Search</span>
-      </div>
-    </nav>
   )
 }

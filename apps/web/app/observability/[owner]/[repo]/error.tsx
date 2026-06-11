@@ -18,7 +18,7 @@ export default function ObservabilityError({
 }) {
   return (
     <div className="screen">
-      <AppNav active="observability" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow">
           <section className="status-region" role="alert">

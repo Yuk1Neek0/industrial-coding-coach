@@ -10,7 +10,7 @@ import { AppNav } from "./_components/chrome"
 export default function PortfolioLoading() {
   return (
     <div className="screen">
-      <AppNav active="portfolio" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow" aria-busy="true">
           <div

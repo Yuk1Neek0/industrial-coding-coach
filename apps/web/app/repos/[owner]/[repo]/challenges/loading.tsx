@@ -10,7 +10,7 @@ import { AppNav } from "./_components/chrome"
 export default function ChallengeListLoading() {
   return (
     <div className="screen">
-      <AppNav active="challenges" />
+      <AppNav active="repos" />
       <main className="page">
         <div className="container-narrow" aria-busy="true">
           <div
