@@ -167,15 +167,13 @@ export interface LearningUnitView {
   createdAt: string
   updatedAt: string
 
-  /* The seven generated outputs. */
+  /* The six generated outputs. */
   restatedGoal: string
   relatedFiles: RelatedFileView[]
   concepts: LearningConcept[]
   agentExecutionNotes: AgentExecutionStep[]
   reviewChecklist: ReviewChecklistItem[]
   questions: UnderstandingQuestion[]
-  challengeConcept: string | null
-  challengeType: string | null
 
   /* The user-mutable JSON columns. */
   userAnswers: UnderstandingAnswer[] | null
@@ -290,8 +288,6 @@ function toUnitView(
     agentExecutionNotes: unit.agentExecutionNotes,
     reviewChecklist: unit.reviewChecklist,
     questions: unit.questions,
-    challengeConcept: unit.challengeConcept ?? null,
-    challengeType: unit.challengeType ?? null,
     userAnswers: unit.userAnswers ?? null,
     score: unit.score ?? null,
     weakAreas: unit.weakAreas ?? null,

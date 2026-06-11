@@ -16,7 +16,6 @@ import {
   IconFileCode,
   relTime,
 } from "../../../../_components/chrome"
-import { ChallengePanel } from "./_components/challenge-panel"
 import { ReviewChecklist } from "./_components/review-checklist"
 import { UnderstandingQuestions } from "./_components/understanding-questions"
 
@@ -264,12 +263,6 @@ export default async function IssueLearningWorkspacePage({
             initialScore={u.score}
             initialWeakAreas={u.weakAreas}
             updatedAt={u.updatedAt}
-          />
-
-          {/* §6h Challenge panel — stub only */}
-          <ChallengePanel
-            challengeConcept={u.challengeConcept}
-            challengeType={u.challengeType}
           />
 
           <footer
