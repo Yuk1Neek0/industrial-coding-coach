@@ -600,6 +600,20 @@
   color: var(--fg);
   overflow-wrap: anywhere;
 }
+/* Captured-file deep link into the snapshot viewer (issue #269). */
+.keyfile-link {
+  justify-self: start;
+  border-radius: var(--radius-sm);
+}
+.keyfile-link:hover {
+  color: var(--accent-fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.keyfile-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 25%, transparent);
+}
 .keyfile-size {
   font-family: var(--font-mono);
   font-size: 12px;
