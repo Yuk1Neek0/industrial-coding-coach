@@ -160,9 +160,18 @@ function AlternativesComparison({ tools }: { tools: Tool[] }) {
 
 /* ── Key files & debug lists ──────────────────────────────────────── */
 
+/** Deep link into the snapshot file viewer (#268 URL contract, spec §4a). */
+function viewerHref(owner: string, repo: string, path: string): string {
+  return `/repos/${owner}/${repo}/files?path=${encodeURIComponent(path)}`
+}
+
 function KeyFilesList({
+  owner,
+  repo,
   items,
 }: {
+  owner: string
+  repo: string
   items: StackExplanationView["keyFiles"]
 }) {
   return (
@@ -172,7 +181,9 @@ function KeyFilesList({
           <span className="fileref-icon" aria-hidden="true">
             <IconFileCode size={14} />
           </span>
-          <code className="fileref-path">{f.path}</code>
+          <Link className="fileref-path" href={viewerHref(owner, repo, f.path)}>
+            {f.path}
+          </Link>
           <p className="fileref-reason">{f.reason}</p>
         </li>
       ))}
@@ -251,7 +262,11 @@ function ExplainedView({
           <h2 id="sec-files">Key files to inspect</h2>
           <span className="hint">where to look first</span>
         </div>
-        <KeyFilesList items={explanation.keyFiles} />
+        <KeyFilesList
+          owner={explanation.owner}
+          repo={explanation.repo}
+          items={explanation.keyFiles}
+        />
       </section>
 
       <section className="stack-section" aria-labelledby="sec-debug">

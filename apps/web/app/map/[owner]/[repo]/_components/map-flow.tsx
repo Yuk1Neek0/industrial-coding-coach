@@ -173,7 +173,11 @@ function MappedView({
           <h2 id="h-files">Key files</h2>
           <span className="hint">where this project&apos;s logic lives</span>
         </div>
-        <FileMapExplorer keyFiles={map.keyFileMap} />
+        <FileMapExplorer
+          owner={map.owner}
+          repo={map.repo}
+          keyFiles={map.keyFileMap}
+        />
       </section>
 
       <section
@@ -186,6 +190,8 @@ function MappedView({
           <span className="hint">trace a request, state, and AI calls</span>
         </div>
         <ArchitectureFlowViewer
+          owner={map.owner}
+          repo={map.repo}
           mermaidDiagram={map.mermaidDiagram}
           requestDataFlow={map.requestDataFlow}
           stateFlow={map.stateFlow}
@@ -202,7 +208,11 @@ function MappedView({
           <h2 id="h-debug">Where to start debugging</h2>
           <span className="hint">if something breaks, look here</span>
         </div>
-        <DebugPathUi debugPath={map.debugPath} />
+        <DebugPathUi
+          owner={map.owner}
+          repo={map.repo}
+          debugPath={map.debugPath}
+        />
       </section>
 
       <footer className="map-footer">
