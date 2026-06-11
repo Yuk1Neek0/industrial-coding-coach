@@ -124,13 +124,17 @@ export function DetailView({ path }: { path: GoldenPath }) {
               <h2 id="sec-templates" className="section-title">
                 Templates this builds on
               </h2>
-              <span className="section-hint">M2 · plain text</span>
+              <span className="section-hint">from the Template Registry</span>
             </div>
             <div className="chips">
               {path.templatesReferenced.map((template) => (
-                <span key={template} className="chip">
+                <Link
+                  key={template}
+                  className="chip"
+                  href={`/templates/${template}`}
+                >
                   {template}
-                </span>
+                </Link>
               ))}
             </div>
           </section>

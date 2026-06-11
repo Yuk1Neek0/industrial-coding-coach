@@ -622,6 +622,10 @@
   color: var(--fg-muted);
   background: var(--bg);
 }
+a.chip:hover {
+  border-color: var(--border-strong);
+  color: var(--fg);
+}
 
 /* Alternatives */
 .alt-list {
