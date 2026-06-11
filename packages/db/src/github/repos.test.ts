@@ -24,6 +24,7 @@ import type {
 } from "./client"
 import { GitHubError, fail, ok, type GitHubResult } from "./errors"
 import {
+  countRepoFilesBySnapshot,
   getImportedRepo,
   getImportedRepoById,
   getRepoFile,
@@ -423,6 +424,68 @@ describe("listRepoFiles", () => {
 
   it("returns an empty array when the repo was never imported", async () => {
     expect(await listRepoFiles("acme", "missing", "main", db)).toEqual([])
+  })
+})
+
+describe("countRepoFilesBySnapshot", () => {
+  let db: CatalogDb
+
+  beforeEach(() => {
+    db = makeTestDb()
+  })
+
+  it("returns an empty map when no key files are captured", async () => {
+    seedSnapshot(db, { owner: "acme", repo: "widgets", ref: "main" })
+    const counts = await countRepoFilesBySnapshot(db)
+    expect(counts.size).toBe(0)
+  })
+
+  it("counts repo_files rows per snapshot id", async () => {
+    const mainId = seedSnapshot(db, {
+      owner: "acme",
+      repo: "widgets",
+      ref: "main",
+    })
+    const devId = seedSnapshot(db, {
+      owner: "acme",
+      repo: "widgets",
+      ref: "dev",
+    })
+    const bareId = seedSnapshot(db, { owner: "acme", repo: "empty", ref: "main" })
+    db.insert(repoFiles)
+      .values([
+        {
+          snapshotId: mainId,
+          path: "package.json",
+          sha: "s1",
+          size: 10,
+          content: '{ "name": "widgets" }',
+          category: "package-manifest",
+        },
+        {
+          snapshotId: mainId,
+          path: "tsconfig.json",
+          sha: "s2",
+          size: 10,
+          content: "{}",
+          category: "build-config",
+        },
+        {
+          snapshotId: devId,
+          path: "package.json",
+          sha: "s3",
+          size: 10,
+          content: "dev content",
+          category: "package-manifest",
+        },
+      ])
+      .run()
+
+    const counts = await countRepoFilesBySnapshot(db)
+    expect(counts.get(mainId)).toBe(2)
+    expect(counts.get(devId)).toBe(1)
+    // A snapshot with no captured key files is absent — callers default to 0.
+    expect(counts.has(bareId)).toBe(false)
   })
 })
 

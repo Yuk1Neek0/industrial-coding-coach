@@ -835,3 +835,131 @@
     transform: rotate(360deg);
   }
 }
+
+/* ---------- Repos Hub (M17) ----------
+ * The imported-repo row, ported from the stack/map/reviews chooser
+ * `.repo-list` / `.repo-row` idiom — same tokens, radii, and hover
+ * treatment. Here the row is a card (identity + nine area links), not a
+ * single row-as-link, so the focus ring lives on the area links. */
+.hub-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.hub-header .btn {
+  flex-shrink: 0;
+}
+.hub-count {
+  margin-top: 28px;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.repo-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+.repo-row {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 18px 22px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.repo-row:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+.repo-row .repo-icon {
+  color: var(--fg-muted);
+  display: flex;
+  margin-top: 2px;
+}
+.repo-row .repo-main {
+  min-width: 0;
+}
+.repo-row .repo-identity {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.repo-row .repo-name {
+  font-family: var(--font-mono);
+  font-size: 14.5px;
+  color: var(--fg);
+  font-weight: 500;
+}
+.repo-row .repo-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.repo-row .repo-state {
+  font-size: 12px;
+  color: var(--fg-subtle);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.repo-row .repo-desc {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--fg-muted);
+  min-width: 0;
+}
+.repo-row .repo-desc-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.repo-row .repo-gh-link {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.repo-row .repo-gh-link:hover {
+  color: var(--fg);
+}
+.repo-row .repo-areas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.repo-area-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  font-size: 13px;
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  transition: border-color 0.15s, color 0.15s;
+}
+.repo-area-link:hover {
+  color: var(--fg);
+  border-color: var(--border-strong);
+}
+.repo-area-link:focus-visible {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 25%, transparent);
+}
