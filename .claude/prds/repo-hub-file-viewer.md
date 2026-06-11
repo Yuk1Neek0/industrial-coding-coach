@@ -1,7 +1,7 @@
 ---
 name: repo-hub-file-viewer
 description: A real /repos hub listing imported snapshots and a read-only snapshot file viewer, wired into the import success page and the M5/M6 file references
-status: backlog
+status: completed
 created: 2026-06-11T18:25:12Z
 ---
 
