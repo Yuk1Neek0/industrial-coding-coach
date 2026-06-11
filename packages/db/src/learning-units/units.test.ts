@@ -110,8 +110,6 @@ const content: LearningUnitContent = {
     { id: "q1", prompt: "How does Next.js know this file is a route?" },
     { id: "q2", prompt: "Why is the response a JSON body, not plain text?" },
   ],
-  challengeConcept: "fault-injection",
-  challengeType: "expand",
 }
 
 /** Build a `NewLearningUnitInput` against the seeded snapshot. */
@@ -144,8 +142,6 @@ describe("learning-units data-access", () => {
     expect(row.agentExecutionNotes).toHaveLength(2)
     expect(row.reviewChecklist).toHaveLength(2)
     expect(row.questions).toHaveLength(2)
-    expect(row.challengeConcept).toBe("fault-injection")
-    expect(row.challengeType).toBe("expand")
     // The user-mutable fields start null — R2 / R4 / R6.
     expect(row.userAnswers).toBeNull()
     expect(row.score).toBeNull()
@@ -222,13 +218,11 @@ describe("learning-units data-access", () => {
       { snapshotId, source: SOURCE, issueRef: ISSUE_REF },
       {
         restatedGoal: "Add /health and /ready endpoints.",
-        challengeConcept: null,
       },
       db,
     )
     expect(updated?.restatedGoal).toContain("/ready")
-    expect(updated?.challengeConcept).toBeNull()
-    // The seven generated outputs we did NOT patch are preserved.
+    // The six generated outputs we did NOT patch are preserved.
     expect(updated?.concepts).toHaveLength(1)
     expect(updated?.updatedAt.getTime()).toBeGreaterThanOrEqual(
       created.updatedAt.getTime(),

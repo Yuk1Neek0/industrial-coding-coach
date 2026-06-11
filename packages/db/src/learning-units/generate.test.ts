@@ -141,15 +141,13 @@ function validUnit(overrides?: {
       { id: "q1", prompt: "How does Next.js know this file is a route?" },
       { id: "q2", prompt: "What does Response.json do here?" },
     ],
-    challengeConcept: "fault-injection",
-    challengeType: "expand",
   }
 }
 
 // --- generateLearningUnit --------------------------------------------------
 
 describe("generateLearningUnit", () => {
-  it("produces a typed seven-part unit after the model reads a snapshot file", async () => {
+  it("produces a typed six-part unit after the model reads a snapshot file", async () => {
     const client = createLlmClient(
       createMockTransport({
         replies: [
@@ -178,8 +176,6 @@ describe("generateLearningUnit", () => {
       expect(c.agentExecutionNotes).toHaveLength(2)
       expect(c.reviewChecklist).toHaveLength(2)
       expect(c.questions).toHaveLength(2)
-      expect(c.challengeConcept).toBe("fault-injection")
-      expect(c.challengeType).toBe("expand")
       expect(result.data.integrity.ok).toBe(true)
     }
   })
@@ -577,8 +573,6 @@ describe("parseUnitContent", () => {
     const parsed = parseUnitContent(validUnit())
     expect(parsed?.relatedFiles).toHaveLength(1)
     expect(parsed?.questions[0]?.id).toBe("q1")
-    expect(parsed?.challengeConcept).toBe("fault-injection")
-    expect(parsed?.challengeType).toBe("expand")
   })
 
   it("rejects a non-object input", () => {
@@ -657,18 +651,5 @@ describe("parseUnitContent", () => {
     const ids = parsed?.reviewChecklist.map((c) => c.id) ?? []
     expect(ids).toHaveLength(3)
     expect(new Set(ids).size).toBe(3)
-  })
-
-  it("defaults challenge stub fields to null when omitted (R3)", () => {
-    const parsed = parseUnitContent({
-      restatedGoal: "Goal.",
-      relatedFiles: [{ path: "a.ts", reason: "A reason." }],
-      concepts: [],
-      agentExecutionNotes: [],
-      reviewChecklist: [],
-      questions: [{ id: "q1", prompt: "Why?" }],
-    })
-    expect(parsed?.challengeConcept).toBeNull()
-    expect(parsed?.challengeType).toBeNull()
   })
 })

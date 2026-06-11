@@ -1,12 +1,11 @@
-// The bounded Anthropic SDK call that generates a seven-part learning unit
-// (issue-based-learning-workspace PRD FR-2 / FR-3 / FR-4 / FR-7, Issue #133).
+// The bounded Anthropic SDK call that generates a six-part learning unit
+// (issue-based-learning-workspace PRD FR-2 / FR-3 / FR-4, Issue #133).
 //
 // `generateLearningUnit` turns a normalized {@link LearningUnitInput} (Issue
-// #132) into a typed seven-part learning unit ready for persistence on the
+// #132) into a typed six-part learning unit ready for persistence on the
 // `learning_units` row (Issue #131): a restated goal, a related-files list, a
-// concepts list, AI-agent execution notes, a review checklist, understanding
-// questions, and a minimal challenge stub (`challengeConcept`,
-// `challengeType` per R3 / FR-7).
+// concepts list, AI-agent execution notes, a review checklist, and
+// understanding questions.
 //
 // Per ADR 0005 this is a *bounded* prompt -> structured-output call on the
 // `@workspace/ai` (llm-foundation) client — NOT LangChain (M6-only) and NOT an
@@ -68,7 +67,7 @@ import type { LearningUnitContent } from "./units"
  */
 const MAX_ITERATIONS = 6
 
-/** Output-token cap — the seven-part unit is larger than a chat reply. */
+/** Output-token cap — the six-part unit is larger than a chat reply. */
 const GENERATE_MAX_TOKENS = 4096
 
 /** Most related-file candidates to list in the seed prompt — keeps it bounded. */
@@ -381,19 +380,6 @@ const SUBMIT_TOOL: Anthropic.Tool = {
           required: ["id", "prompt"],
         },
       },
-      challengeConcept: {
-        type: ["string", "null"],
-        description:
-          "The minimal challenge concept stub — a one-line concept name " +
-          "or null when no challenge is appropriate. M9 will land the " +
-          "full challenge schema (R3 / FR-7).",
-      },
-      challengeType: {
-        type: ["string", "null"],
-        description:
-          "The minimal challenge type stub — 'debug' or 'expand' or null " +
-          "(R3 / FR-7).",
-      },
     },
     required: [
       "restatedGoal",
@@ -409,7 +395,7 @@ const SUBMIT_TOOL: Anthropic.Tool = {
 const SYSTEM_PROMPT =
   "You are a coding coach helping a job-seeking junior developer understand " +
   "and defend a GitHub issue (or CCPM task) they built with heavy AI " +
-  "assistance. Your job is to produce a seven-part learning unit that ties " +
+  "assistance. Your job is to produce a six-part learning unit that ties " +
   "the issue's goal to real files in the imported snapshot — grounded in " +
   "real code, never generic advice.\n\n" +
   "You are given the normalized issue/task input plus tools to inspect the " +
@@ -511,7 +497,7 @@ function buildInitialPrompt(
       "unavailable' rather than fabricating one."
 
   return (
-    `Produce a seven-part learning unit for this ${input.source}.\n\n` +
+    `Produce a six-part learning unit for this ${input.source}.\n\n` +
     `## Input\n` +
     `- Source: ${input.source}\n` +
     `- Ref: ${input.issueRef}\n` +
@@ -749,9 +735,6 @@ export function parseUnitContent(
     return null
   }
 
-  const challengeConcept = str(record.challengeConcept)
-  const challengeType = str(record.challengeType)
-
   return {
     restatedGoal,
     relatedFiles,
@@ -759,16 +742,14 @@ export function parseUnitContent(
     agentExecutionNotes,
     reviewChecklist,
     questions,
-    challengeConcept,
-    challengeType,
   }
 }
 
 // --- The bounded call ------------------------------------------------------
 
 /**
- * Produce a typed seven-part learning unit for one normalized issue/task input
- * (PRD FR-2 / FR-3 / FR-4 / FR-7).
+ * Produce a typed six-part learning unit for one normalized issue/task input
+ * (PRD FR-2 / FR-3 / FR-4).
  *
  * Makes a bounded tool-use call on the `@workspace/ai` client: the model may
  * inspect snapshot files through `read_snapshot_file` and project-map entries

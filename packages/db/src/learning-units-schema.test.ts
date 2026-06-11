@@ -1,10 +1,10 @@
 // Verifies the learning_units migration (drizzle/0007_*) applies cleanly to a
 // fresh database and that the learning_units table behaves as the schema
 // declares: a child of repo_snapshots keyed by snapshot + source + issue ref,
-// with the seven generated outputs round-tripping as JSON, the user-mutable
+// with the six generated outputs round-tripping as JSON, the user-mutable
 // columns (answers / score / weak areas / checklist state) null until
 // populated, and the row cascade-deleted with its parent (M7
-// issue-based-learning-workspace PRD; ADR 0006; R1 / R2 / R3 / R4).
+// issue-based-learning-workspace PRD; ADR 0006; R1 / R2 / R4).
 
 import Database from "better-sqlite3"
 import { drizzle } from "drizzle-orm/better-sqlite3"
@@ -50,7 +50,7 @@ const sampleSnapshot: NewRepoSnapshot = {
   fileTree: [{ path: "package.json", type: "blob", size: 1200, sha: "f1" }],
 }
 
-/** A learning unit with the seven generated outputs but no answers/score yet. */
+/** A learning unit with the six generated outputs but no answers/score yet. */
 function makeUnit(
   snapshotId: number,
   overrides: Partial<NewLearningUnit> = {},
@@ -80,8 +80,6 @@ function makeUnit(
     questions: [
       { id: "q1", prompt: "How does Next.js know this file is a route?" },
     ],
-    challengeConcept: "fault-injection",
-    challengeType: "expand",
     ...overrides,
   }
 }
@@ -93,7 +91,7 @@ describe("learning_units migration + schema", () => {
     db = makeTestDb()
   })
 
-  it("migration creates learning_units and stores the seven JSON outputs", () => {
+  it("migration creates learning_units and stores the six JSON outputs", () => {
     const [snap] = db
       .insert(repoSnapshots)
       .values(sampleSnapshot)
@@ -118,8 +116,6 @@ describe("learning_units migration + schema", () => {
     expect(row?.reviewChecklist).toHaveLength(2)
     expect(row?.reviewChecklist[0]?.id).toBe("c1")
     expect(row?.questions[0]?.id).toBe("q1")
-    expect(row?.challengeConcept).toBe("fault-injection")
-    expect(row?.challengeType).toBe("expand")
     expect(row?.createdAt).toBeInstanceOf(Date)
     expect(row?.updatedAt).toBeInstanceOf(Date)
   })
@@ -159,24 +155,6 @@ describe("learning_units migration + schema", () => {
     expect(row?.score).toBeNull()
     expect(row?.weakAreas).toBeNull()
     expect(row?.checklistState).toBeNull()
-  })
-
-  it("leaves the challenge stub fields null when omitted (R3 — stub only)", () => {
-    const [snap] = db
-      .insert(repoSnapshots)
-      .values(sampleSnapshot)
-      .returning()
-      .all()
-    const [row] = db
-      .insert(learningUnits)
-      .values(
-        makeUnit(snap!.id, { challengeConcept: null, challengeType: null }),
-      )
-      .returning()
-      .all()
-
-    expect(row?.challengeConcept).toBeNull()
-    expect(row?.challengeType).toBeNull()
   })
 
   it("stores graded answers, the per-attempt score, the weak-area breakdown, and checklist state", () => {

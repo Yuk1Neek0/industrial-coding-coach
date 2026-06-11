@@ -96,8 +96,6 @@ function verifiableParts(unit: VerifiableLearningUnit): LearningUnitContent {
     agentExecutionNotes: unit.agentExecutionNotes,
     reviewChecklist: unit.reviewChecklist,
     questions: unit.questions,
-    challengeConcept: unit.challengeConcept,
-    challengeType: unit.challengeType,
   }
 }
 

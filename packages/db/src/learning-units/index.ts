@@ -10,7 +10,7 @@
 //                 (#133) and the integration layer (#138) both call (FR-4),
 //                 plus a DB-backed convenience wrapper.
 // - `generate`  — the bounded Anthropic SDK call that produces the typed
-//                 seven-part learning unit (FR-2 / FR-3 / FR-4 / FR-7, #133).
+//                 six-part learning unit (FR-2 / FR-3 / FR-4, #133).
 // - `grade`     — the bounded Anthropic SDK call that grades the user's
 //                 answers into an `UnderstandingScore` and a
 //                 `LearningWeakArea` breakdown (FR-5, #134).
